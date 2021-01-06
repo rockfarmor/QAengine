@@ -1,0 +1,126 @@
+.btncolor{
+    color: white;
+    border-color: white;
+
+}
+.navbar{
+    background-color: rgb(20,20,20) !important;
+}
+
+.leftright{
+    background-color: rgb(20,20,20);
+}
+.cardflex{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 2%;
+    justify-content: center;
+    
+}
+
+.cart{
+    list-style: none;
+    margin-left: 5%;
+  }
+  
+.card{
+    
+    margin: 5px;
+    border-color:  black;
+    border-radius: 5px;
+    flex-wrap: wrap;
+    background-color: rgb(20,20,20);
+    color: white;
+    height: 35rem;
+}
+.modal-content{
+    background-color: rgb(20,20,20);
+    color: white;
+}
+.list-group-item{
+    background-color: rgb(20,20,20);
+}
+body{
+    background-image:url("pictures/olympus-camera-fon.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    letter-spacing: 1px;
+    
+    
+}
+.carousel.slide{
+    max-width: 800px !important;
+    margin: auto;
+    margin-top: 15px;
+    width: 50%;
+}
+.page-footer{
+    color: white;
+}
+.imgcar{
+    width: 100%;
+    height: 100%;
+}
+.card-deck{
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-bottom: 2%;
+    padding-top: 0;
+}
+.card-footer{
+    display: flex;
+    height: auto;
+}
+.shopcartfooter{
+    background-color: rgb(20,20,20);
+    margin-bottom: 5%;
+    height: 5rem;
+    
+    }
+.shopbutton{
+height: 50%;
+
+}
+.shopcarthead{
+    color: white;
+    background-color: rgb(20,20,20);
+    height: 5rem;
+    margin-top: 5rem;
+    margin-bottom: 2rem;
+}
+.jumbotron{
+    color: white;
+    background-color: rgb(20,20,20,0.6);
+    margin-top: 5rem;
+    
+}
+.jumbimg{
+    width: 100%;
+    height: 10px;
+}
+.newsimg{
+    width: 100%;
+    height: 100%;
+    
+}
+.newsitem{
+ padding: 2rem;
+}
+.checkitout{
+    margin-top: 1rem;
+}
+.shopmore{
+    height: 100%;
+}
+.carousel.slide {
+    max-width: 800px !important;
+    margin: auto;
+    margin-top: 15px;
+    width: 100% !important;
+}
+.cardimg{
+    height: 40%;
+}
+
+
