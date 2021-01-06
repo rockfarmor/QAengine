@@ -100,14 +100,26 @@ routes.post('/user/login', async (req, res) => {
     }
 });
 
-//GET ALL PRODUCTS
-routes.get('/products', async (req, res) => {
+//GET ALL QUESTIONS
+routes.get('/index', async (req, res) => {
+    const question = {
+        id : 1,
+        title : "Teest",
+        text : "JAHWDAJWDJAWDJAWD",
+        date : "2020-01-06",
+        userId : "1",
+        category : 1,
+        isDuplicate : "0",
+        duplicateId : "0",
+        
+    }
     try {
-        const prod = await dbService.getProd();
-        res.json(prod);
+        res.json(question)
+        //const prod = await dbService.getProd();
+        //res.json(prod);
     } catch (error) {
         console.log(error);
-        res.json("Kunde ej hämta alla produkter");
+        res.json("Kunde ej hämta alla Frågor");
     }
 });
 
@@ -137,16 +149,18 @@ routes.post('/products', async (req, res) => {
 
 //GET A PRODUCT BY ID
 routes.get('/products/:id', async (req, res) => {
+
+    const testquestion = {
+        qId: 1,
+        uId: 1,
+        qTitle: "TestTitle",
+        qText: "En lång text som ingen kommer läsa",
+    }
+
+
+
     try {
-        const check = parseInt(req.params.id, 10);
-
-        if (!isNaN(check)) {
-            const prod = await dbService.getProdById(req.params.id);
-            res.json(prod);
-        } else {
-            res.send("Fel validering");
-
-        }
+        res.json(testquestion)
     } catch (error) {
         console.log(error);
         res.json("Kunde inte hämta produkt")
@@ -307,6 +321,19 @@ routes.put('/allcart/update', async (req, res) => {
         console.log(error)
         res.json("Gick ej att uppdatera produkten");
     }
+
+});
+//VOTE UP OR VOTE DOWN
+routes.put('/home/blablal',async (req,res)=>{
+
+});
+
+//LABEL AS DUPLICATE
+routes.put('/home/blablal',async (req,res)=>{
+
+});
+//BLOCK A USER
+routes.put('/home/blablal',async (req,res)=>{
 
 });
 

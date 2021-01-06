@@ -175,7 +175,18 @@ const updateCartProd = async (quantity,id) => {
         throw new Error("Gick inte att uppdatera produkten")
     }
 }
+//VOTE UP OR DOWN
+const voteUpDown = async () =>{
 
+}
+//LABEL AS DUPLICATE
+const labelDuplicate = async () => {
+
+}
+//BLOCK A USER
+const blockUser = async () => {
+
+}
 
 module.exports = {
     getUsers: getUsers,
@@ -191,6 +202,9 @@ module.exports = {
     getShopCart : getShopCart,
     deleteShopCart : deleteShopCart,
     getCartById : getCartById,
-    updateCartProd : updateCartProd
+    updateCartProd : updateCartProd,
+    voteUpDown : voteUpDown,
+    labelDuplicate : labelDuplicate,
+    blockUser : blockUser
 
 };
