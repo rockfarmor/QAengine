@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>Q&A</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="style/style.css" />
+
+</head>
+
+<body>
+  <div id="app">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+      <a class="navbar-brand" href="/">QandA</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+        aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Link</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" href="#">Disabled</a>
+          </li>
+        </ul>
+        <div class="picture no-bottom-padding no-top-padding d-flex" v-if="user">
+          <div class="p2">
+            <img src="https://saj.se/wp-content/uploads/2015/03/boka-forelasare-Goran-Persson.jpg">
+          </div>
+          <div class="p2 logged-in">
+            Inloggad som: <br />
+            {{user.uEmail}}
+          </div>
+        </div>
+        <form class="form-inline mt-2 mt-md-0">
+          <input class="form-control mr-sm-2" v-on:keyup="keymonitor" type="text" id="searchField" placeholder="Search"
+            aria-label="Search">
+
+        </form>
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Log Out</button>
+      </div>
+    </nav>
+
+    <main role="main" class="container">
+
+      <div class="d-flex">
+        <div class="p-2 main-flex-side">
+
+          <div class="categories">
+
+            <div class="category" v-for="category in categories"
+              v-bind:class="{ 'active' : category_id == category.cId }" v-on:click="updateCategory(category.cId)">
+              {{category.cTitle}}
+            </div>
+
+          </div>
+        </div>
+        <div class="p-2 main-flex">
+          <div class="question">
+            <div class="d-flex">
+              <div class="mr-auto p-2">
+                <h4>Ask your question here</h4>
+              </div>
+              <div classs="p-2">
+
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <label class="input-group-text" for="inputGroupSelect01">Category</label>
+                  </div>
+                  <select class="custom-select" id="inputGroupSelect01">
+                    <option v-bind:value="category.cId" v-for="category in categoriess">{{category.cTitle}}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="comment-add">
+              <div class="d-flex">
+                <div class="p-2 picture no-bottom-padding no-top-padding">
+                  <img src="https://saj.se/wp-content/uploads/2015/03/boka-forelasare-Goran-Persson.jpg">
+                </div>
+                <div class="p-2 comment-area-parent no-bottom-padding no-top-padding">
+                  <div class="input-group mb-3">
+
+                    <input type="text" class="form-control" id="ask-title" placeholder="Title of question"
+                      aria-label="Username" aria-describedby="basic-addon1" onfocus="showAskText()">
+                  </div>
+                  <textarea class="commment-area" placeholder="Question text" id="ask-textarea"
+                    oninput="auto_grow(this)"></textarea>
+                </div>
+
+                <div class="p-2 no-bottom-padding no-top-padding">
+                  <button type="submit" class="btn btn-primary mb-2" onclick="sendQuestion()">Ask</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="question" v-for="question in questions">
+            <div class="profile">
+
+              <div class="profile d-flex flex-row no-padding">
+                <div class="p-2 picture no-padding"><img
+                    src="https://saj.se/wp-content/uploads/2015/03/boka-forelasare-Goran-Persson.jpg"></div>
+                <div class="p-2 name no-top-padding no-bottom-padding">
+
+                  <div class="no-padding">
+                    <a href="#">Göran persson</a> {{question.qsDate}}
+                  </div>
+                  <div class="no-padding">
+                    <em>Föredetta statsminister, numera konung</em>
+                  </div>
+                </div>
+              </div>
+              <div class="title">{{question.qsTitle}}</div>
+              <div class="question-text">
+                {{question.qsText}}
+              </div>
+              <div class="social d-flex flex-row">
+                <div class="p-2  no-right-padding">
+                  <button class="upvote" v-on:click="upVoteQuestion(question.qsId)"><img
+                      src="images/icons/hand-thumbs-up.svg">
+                    {{question.qUpVotes-question.qDownVotes}}</button>
+                </div>
+                <div class="p-2 no-left-padding">
+                  <button class="downvote" v-on:click="downVoteQuestion(question.qsId)"><img
+                      src="images/icons/hand-thumbs-down.svg"></button>
+                </div>
+                <div class="p-2">
+                  <button class="comment" v-on:click="showAnswers('#comments-section-'+question.qsId)">
+                    <img src="images/icons/chat-left-dots.svg"> 3
+                  </button>
+                </div>
+              </div>
+
+              <div class="comment-section-main" v-bind:id="'comments-section-'+question.qsId">
+                <hr />
+                <div class="comment-add">
+                  <div class="d-flex">
+                    <div class="p-2 picture no-bottom-padding no-top-padding">
+                      <img src="https://saj.se/wp-content/uploads/2015/03/boka-forelasare-Goran-Persson.jpg">
+                    </div>
+                    <div class="p-2 comment-area-parent no-bottom-padding no-top-padding">
+                      <textarea class="commment-area" id="comment-textarea" oninput="auto_grow(this)"></textarea>
+                    </div>
+                    <div class="p-2 no-bottom-padding no-top-padding">
+                      <button type="submit" class="btn btn-primary mb-2">Add comment</button>
+                    </div>
+                  </div>
+                </div>
+                <hr />
+                <div class="comment-section">
+                  <div class="comments">
+                    <div class="profile d-flex flex-row no-padding">
+                      <div class="p-2 picture no-padding"><img
+                          src="https://d173k4r8ofqdm5.cloudfront.net/cache/f0/01/f0015fb4ade178df78d5f5b41a816620.jpg">
+                      </div>
+                      <div class="p-2 name no-top-padding no-bottom-padding">
+                        <div class="no-padding">
+                          <a href="#">Freddeboy64</a> 2021-01-12
+                        </div>
+                        <div class="no-padding">
+                          Nu ska du passa dig jävligt noga GP
+                        </div>
+                      </div>
+                    </div>
+                    <div class="social small d-flex flex-row">
+                      <div class="p-2  no-right-padding">
+                        <button class="upvote"><img src="images/icons/hand-thumbs-up.svg"> 3</button>
+                      </div>
+                      <div class="p-2 no-left-padding">
+                        <button class="downvote active"><img src="images/icons/hand-thumbs-down.svg"></button>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div class="comments">
+                    <div class="profile d-flex flex-row no-padding">
+                      <div class="p-2 picture no-padding"><img
+                          src="https://d173k4r8ofqdm5.cloudfront.net/cache/f0/01/f0015fb4ade178df78d5f5b41a816620.jpg">
+                      </div>
+                      <div class="p-2 name no-top-padding no-bottom-padding">
+                        <div class="no-padding">
+                          <a href="#">Freddeboy64</a> 2021-01-12
+                        </div>
+                        <div class="no-padding">
+                          Nu ska du passa dig jävligt noga GP
+                        </div>
+                      </div>
+                    </div>
+                    <div class="social small d-flex flex-row">
+                      <div class="p-2  no-right-padding">
+                        <button class="upvote"><img src="images/icons/hand-thumbs-up.svg"> 3</button>
+                      </div>
+                      <div class="p-2 no-left-padding">
+                        <button class="downvote active"><img src="images/icons/hand-thumbs-down.svg"></button>
+
+
+
+
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div class="comments">
+                    <div class="profile d-flex flex-row no-padding">
+                      <div class="p-2 picture no-padding"><img
+                          src="https://d173k4r8ofqdm5.cloudfront.net/cache/f0/01/f0015fb4ade178df78d5f5b41a816620.jpg">
+                      </div>
+                      <div class="p-2 name no-top-padding no-bottom-padding">
+                        <div class="no-padding">
+                          <a href="#">Freddeboy64</a> 2021-01-12
+                        </div>
+                        <div class="no-padding">
+                          Nu ska du passa dig jävligt noga GP
+                        </div>
+                      </div>
+                    </div>
+                    <div class="social small d-flex flex-row">
+                      <div class="p-2  no-right-padding">
+                        <button class="upvote"><img src="images/icons/hand-thumbs-up.svg"> 3</button>
+                      </div>
+                      <div class="p-2 no-left-padding">
+                        <button class="downvote active"><img src="images/icons/hand-thumbs-down.svg"></button>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+                <br />
+                <button type="submit" class="btn btn-primary mb-2"
+                  v-on:click="showAnswers('#comments-section-'+question.qsId)">Hide
+                  comment
+                  section</button>
+              </div>
+
+
+
+            </div>
+          </div>
+
+
+        </div>
+        <div class="p-2 main-flex-side">
+
+        </div>
+      </div>
+
+
+
+    </main>
+
+  </div>
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+
+  <!--jquery 3 slim version doesn't support Ajax-->
+  <script src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+  <script>
+    const vm = new Vue({
+      el: "#app",
+      data: {
+        hej: "Du skall icke passera",
+        loggedInUser: {},
+        category_id: -1,
+        categoriess: [],
+        categories: [{
+          "cId": -1,
+          "cTitle": "All",
+          "cDescription": "All categories"
+        }],
+        user: {},
+        questions: []
+
+      },
+      methods: {
+        loadCategories: function () {
+          //Update Categories
+          $.ajax({
+            url: '/category',
+            type: 'GET',
+            success: (data) => {
+
+              this.categoriess = Array.from(data)
+              this.categories = data
+
+              this.categories.unshift({
+                "cId": -1,
+                "cTitle": "All",
+                "cDescription": "All categories"
+              })
+            }
+          });
+
+          //update questions
+        },
+        loadQuestions: function () {
+          //Load  questions
+          $.ajax({
+            url: '/question',
+            type: 'GET',
+            success: (data) => {
+              if (this.category_id == -1) {
+                this.questions = data
+              } else {
+                //Filter out by category
+                this.questions = []
+                for (const id in data) {
+                  let question = data[id]
+                  if (question.cId == this.category_id)
+                    this.questions.push(question)
+                }
+
+              }
+              this.$nextTick(() => {
+                hideAll()
+              });
+
+            }
+          });
+
+          //update questions
+        },
+        getLoggedIn: function () {
+          
+          $.ajax({
+            url: '/loggedinuser',
+            type: 'GET',
+            success: function (data) {
+              console.log("We got this, hello")
+              console.log(data)
+              this.user = data
+              console.log(this.user)
+              return data
+            },
+            error: function (data) {
+              console.log("Error", data)
+            }
+          });
+        },
+
+        upVoteQuestion: function (id) {
+          let dat = { qsId: id }
+          ///question/upvote
+          $.ajax({
+            url: '/question/upvote',
+            data: dat,
+            type: 'PUT',
+            success: function (data) {
+              vm.loadQuestions()
+
+            },
+            error: function (data) {
+              console.log("Error", data)
+            }
+          });
+        },
+        downVoteQuestion: function (id) {
+          let dat = { qsId: id }
+          $.ajax({
+            url: '/question/downvote',
+            data: dat,
+            type: 'PUT',
+            success: function (data) {
+              vm.loadQuestions()
+            },
+            error: function (data) {
+              console.log("Error", data)
+            }
+          });
+        },
+        
+
+        updateCategory: function (id) {
+          this.category_id = id
+          this.loadQuestions()
+        },
+        showAnswers: function (id) {
+          $(id).fadeToggle();
+        },
+
+        keymonitor: function (event) {
+
+          let q = $("#searchField").val();
+
+
+
+          if (q) {
+            $.ajax({
+              url: '/search/' + q,
+              type: 'GET',
+              success: (data) => {
+
+                this.questions = data
+
+                this.$nextTick(() => {
+                  hideAll()
+                });
+
+              }
+            });
+          }
+
+        },
+      },
+
+    });
+    vm.loadCategories()
+    vm.loadQuestions()
+    let us = vm.getLoggedIn()
+    console.log("bajs", us)
+    //From stackoverflow https://stackoverflow.com/questions/17772260/textarea-auto-height
+    function auto_grow(element) {
+      element.style.height = "5px";
+      element.style.height = (element.scrollHeight) + "px";
+    }
+
+    function showComments(id) {
+      $(id).fadeToggle();
+    }
+
+    function hideById(id) {
+      $(id).hide()
+    }
+
+    function showAskText() {
+      $("#ask-textarea").show()
+    }
+
+    function resetQuestion() {
+
+      $("#ask-title").val("")
+      $("#ask-textarea").val("")
+      $("#ask-textarea").hide()
+    }
+
+    function sendQuestion() {
+      let title = $("#ask-title").val()
+      let text = $("#ask-textarea").val()
+      let categoryid = $("#inputGroupSelect01").val()
+      let userId = 1
+
+      dat = {
+        "qsTitle": title,
+        "qsText": text,
+        "uId": userId,
+        "cId": categoryid,
+      }
+
+      $.ajax({
+        url: '/question',
+        data: dat,
+        type: 'POST',
+        success: function (data) {
+          vm.loadQuestions()
+          resetQuestion()
+        },
+        error: function (data) {
+          console.log("Error", data)
+
+        }
+      });
+
+
+
+      console.log(dat)
+
+    }
+
+
+
+
+
+    function hideAll() {
+      $(".comment-section-main").hide()
+    }
+
+
+    $(document).ready(function () {
+
+
+
+      $("#ask-textarea").hide()
+      $(".comment-section-main").hide()
+
+      $(".commment-area").height(5)
+
+
+
+
+    });
+
+
+
+
+  </script>
+</body>
+
+</html>

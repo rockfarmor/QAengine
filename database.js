@@ -17,7 +17,7 @@ const dbPromise = (async () => {
 const getUsers = async () => {
     try {
         const dbCon = await dbPromise;
-        const users = await dbCon.all('SELECT Email,Firstname,Lastname,Password,Id from users order by Firstname ASC');
+        const users = await dbCon.all('SELECT uId,uEmail,uFirstName,uLastName,uRank from user order by uFirstName ASC');
         return users;
     } catch (error) {
         throw new Error('Något gick fel i databasen');
@@ -28,18 +28,31 @@ const getUsers = async () => {
 const getUserById = async (data) => {
     try {
         const dbcon = await dbPromise;
-        const user = await dbcon.all("SELECT Email,Firstname,Lastname,Password,Id FROM users WHERE id=?", [data]);
+        const user = await dbcon.all("SELECT uId,uEmail,uFirstName,uLastName,uRank FROM user WHERE uId=?", [data]);
         return user;
     } catch (error) {
         throw new Error('Något gick fel i databasen')
     }
 }
 
+//GET A USER BY ID
+const getUserByEmail = async (data) => {
+    try {
+        const dbcon = await dbPromise;
+        const user = await dbcon.all("SELECT uId,uEmail,uFirstName,uLastName,uRank FROM user WHERE uEmail=?", [data]);
+        return user;
+    } catch (error) {
+        throw new Error('Något gick fel i databasen')
+    }
+}
+
+
+
 //ADD USER
 const addUser = async (data, hashpass) => {
     try {
         const dbcon = await dbPromise;
-        await dbcon.run("INSERT INTO users (Email,Firstname,Lastname,Password) VALUES(?,?,?,?)", [data.Email, data.Firstname, data.Lastname, hashpass]);
+        await dbcon.run("INSERT INTO user (uEmail,uPassword,uFirstName,uLastName,uRank) VALUES(?,?,?,?,?)", [data.uEmail, hashpass, data.uFirstName, data.uLastName, data.uRank]);
         return { status: "ok" };
     } catch (error) {
         throw new Error("Gick ej att lägga till en user");
@@ -50,7 +63,7 @@ const addUser = async (data, hashpass) => {
 const logIn = async (data) => {
     try {
         const dbcon = await dbPromise;
-        const user = await dbcon.get("SELECT Password FROM users WHERE Email= ?", [data.Email]);
+        const user = await dbcon.get("SELECT uPassword FROM user WHERE uEmail= ?", [data.uEmail]);
         return user;
     } catch (error) {
         throw error;
@@ -58,153 +71,270 @@ const logIn = async (data) => {
     }
 }
 
-//GET ALL PRODUCTS
-const getProd = async () => {
+//GET ALL QUESTIONS
+const getQuestions = async () => {
     try {
         const dbcon = await dbPromise;
-        const prod = await dbcon.all('Select Name,Description,Price,Picture,Id from products order by name ASC')
-        
+        const prod = await dbcon.all('Select qsId,qsTitle,qsText,uId,cId,qsDate,qUpVotes,qDownVotes from questions order by qsId Desc')
+
         return prod;
     } catch (error) {
         throw new Error("Något gick fel i databasen")
     }
 }
 
-//GET A PRODUCT BY ID
-const getProdById = async (data) => {
+//GET A QUESTION BY ID
+const getQuestById = async (data) => {
     try {
         const dbcon = await dbPromise;
-        const prod = await dbcon.all("SELECT Name,Description,Price,picture,id FROM products WHERE id=?", [data]);
+        const prod = await dbcon.all("SELECT qsId,qsTitle,qsText,uId,cId,qsDate,qUpVotes,qDownVotes FROM questions WHERE qsId=?", [data]);
         return prod;
     } catch (error) {
         throw new Error("Fel i databasen")
     }
 }
 
-//ADD A PRODUCT
-const addProd = async (data) => {
+//ADD A QUESTION
+const addQuestion = async (data) => {
     try {
+
         const dbcon = await dbPromise;
-        await dbcon.run("INSERT INTO products (Name,Description,Price,picture) VALUES(?,?,?,?)", [data.Name, data.Description, data.Price,data.picture]);
-        return { status: "Produkten blev tillagd" };
+        await dbcon.run("INSERT INTO questions (qsTitle,qsText,uId,cId) VALUES(?,?,?,?)", [data.qsTitle, data.qsText, data.uId, data.cId]);
+        return { status: "Frågan blev tillagd" };
     } catch (error) {
-        throw new Error("Gick ej att lägga till produkt");
+        throw new Error("Gick ej att lägga till Frågan");
     }
 }
 
-//DELETE A PRODUCT
-const deleteProd = async (data) => {
+//DELETE A QUESTION
+const deleteQuestion = async (data) => {
     try {
+        
         const dbcon = await dbPromise;
-        await dbcon.run("DELETE FROM products WHERE id=?", [data]);
-        return { status: "Produkten blev borttagen" };
+        
+        await dbcon.run("DELETE FROM questions WHERE qsId=?", [data]);
+        
+        return { status: "Frågan blev borttagen" };
     } catch (error) {
-        throw new error("Gick ej att ta bort en produkt")
+        throw new error("Gick ej att ta bort frågan")
     }
 }
 
-//UPDATE A PRODUCT
-const updateProd = async (data) => {
+//UPDATE A QUESTION
+const updateQuestion = async (data) => {
     try {
         const dbcon = await dbPromise;
-        await dbcon.run("UPDATE products SET Name=?,Description=?,Price=?,picture=? WHERE id = ?", [data.Name, data.Description, data.Price, data.picture, data.id]);
-        return { status: "Produkten blev uppdaterad" };
+        await dbcon.run("UPDATE questions SET qsTitle=?,qsText=?,cId=? WHERE qsId = ?", [data.qsTitle, data.qsText, data.cId, data.qsId]);
+        return { status: "frågan blev uppdaterad" };
     } catch (error) {
-        throw new Error("Gick inte att uppdatera produkten")
+        throw new Error("Gick inte att uppdatera frågan")
     }
 }
-//ADD A PRODUCT TO SHOPPINGCART
-const addShopCart = async (data) => {
+//VOTE UP QUESTION
+const voteUpQuestion = async (qsId) => {
     try {
-        a=toString(data.Name);
-        b=toString(data.Description);
-        c=parseInt(data.Price);
-        d=toString(data.picture);
-        e=parseInt(data.id)
-        quantity = 1
         const dbcon = await dbPromise;
-       
-        await dbcon.run("INSERT INTO shoppingcart (Name,Description,Price,picture,id,quantity) VALUES(?,?,?,?,?,?)", [data.Name, data.Description, c,data.picture,e,quantity]);
-        return { status: "Produkten blev tillagd" };
+        await dbcon.run("UPDATE questions SET qUpVotes = qUpVotes + 1 WHERE qsId = ?", [qsId])
+        return { status: "Frågan blev up votat :)" }
+
     } catch (error) {
-        
-        throw new Error("Gick ej att lägga till produkt");
-        
+        throw new Error("Fel i databasen")
     }
 }
-//GET ALL PRODUCTS FROM SHOPPINGCART
-const getShopCart = async () => {
+//VOTE DOWN QUESTION
+const voteDownQuestion = async (qsId) => {
     try {
         const dbcon = await dbPromise;
-        const prod = await dbcon.all('Select Name,Description,Price,picture,id,quantity from shoppingcart order by name ASC')
+        await dbcon.run("UPDATE questions SET qDownVotes = qDownVotes + 1 WHERE qsId = ?", [qsId])
+        return { status: "Frågan blev up downvotat :)" }
+
+    } catch (error) {
+        throw new Error("Fel i databasen")
+    }
+
+}
+//ADD ANSWER
+const addAnswer = async (data) => {
+    try {
+
+        const dbcon = await dbPromise;
+        await dbcon.run("INSERT INTO answer (qsId,uId,aText) VALUES(?,?,?)", [data.qsId, data.uId, data.aText]);
+        return { status: "Svaret blev tillagd" };
+    } catch (error) {
+        throw new Error("Gick ej att lägga till svaret");
+    }
+}
+//UPDATE ANSWER
+const updateAnswer = async (data) => {
+    try {
+        const dbcon = await dbPromise;
+        await dbcon.run("UPDATE answer SET aText = ? WHERE aId = ?", [data.aText,data.aId]);
+        return { status: "Svaret blev uppdaterat" };
+    } catch (error) {
+        throw new Error("Gick inte att uppdatera svaret")
+    }
+}
+//DELETE A ANSWER
+const deleteAnswer = async (data) => {
+    try {
         
-        return prod;
+        const dbcon = await dbPromise;
+        await dbcon.run("DELETE FROM answer WHERE aId=?", [data]);
+        return { status: "Svaret blev borttaget" };
+    } catch (error) {
+        throw new error("Gick ej att ta bort svaret")
+    }
+}
+//GET ALL ANSWERS
+const getAnswers = async () => {
+    try {
+        const dbcon = await dbPromise;
+        const answers = await dbcon.all('Select aId,qsId,uId,aText,aDate,aUpVotes,aDownVotes from answer order by aDate ASC')
+
+        return answers;
     } catch (error) {
         throw new Error("Något gick fel i databasen")
     }
 }
-//DELETE A PRODUCT FROM SHOPPINGCART
-const deleteShopCart = async (data) => {
+//GET ANSWER BY QUESTION ID
+const getAnswerByQuestId = async (data) => {
     try {
         const dbcon = await dbPromise;
-        await dbcon.run("DELETE FROM shoppingcart WHERE id=?", [data]);
-        return { status: "Produkten blev borttagen" };
+        const user = await dbcon.all("SELECT uId,aText,aDate,aUpVotes,aDownVotes FROM answer WHERE qsId=?", [data]);
+        return user;
     } catch (error) {
-        throw new error("Gick ej att ta bort en produkt")
+        throw new Error('Något gick fel i databasen')
     }
 }
-//GET A PRODUCT BY ID FROM SHOPPINGCART
-const getCartById = async (data) => {
+
+
+
+
+
+
+//VOTE UP
+const voteUp = async (aId) => {
     try {
         const dbcon = await dbPromise;
-        const prod = await dbcon.all("SELECT Name,Description,Price,picture,id,quantity FROM shoppingcart WHERE id=?", [data]);
-        return prod;
+        await dbcon.run("UPDATE answer SET aUpVotes = aUpVotes + 1 WHERE aId = ?", [aId])
+        return { status: "Svaret blev up votat :)" }
+
     } catch (error) {
         throw new Error("Fel i databasen")
     }
-}
-//UPDATE A PRODUCT
-const updateCartProd = async (quantity,id) => {
-    //console.log(quantity);
-    //sconsole.log(id);
-    try {
-        const dbcon = await dbPromise;
-        await dbcon.run("UPDATE shoppingcart SET quantity=? WHERE id = ?", [quantity, id]);
-        return { status: "Produkten blev uppdaterad" };
-    } catch (error) {
-        throw new Error("Gick inte att uppdatera produkten")
-    }
-}
-//VOTE UP OR DOWN
-const voteUpDown = async () =>{
 
 }
+//VOTE DOWN
+const voteDown = async (aId) => {
+    try {
+        const dbcon = await dbPromise;
+        await dbcon.run("UPDATE answer SET aDownVotes = aDownVotes + 1 WHERE aId = ?", [aId])
+        return { status: "Svaret blev up downvotat :)" }
+
+    } catch (error) {
+        throw new Error("Fel i databasen")
+    }
+
+}
+
 //LABEL AS DUPLICATE
 const labelDuplicate = async () => {
 
 }
 //BLOCK A USER
-const blockUser = async () => {
+const blockUser = async (uId) => {
+    try {
+        const dbcon = await dbPromise;
+        await dbcon.run("UPDATE user SET uBlocked = 1 WHERE uId = ?", [uId])
+        return { status: "Användare blockerad" }
 
+    } catch (error) {
+        throw new Error("Fel i databasen")
+    }
+
+}
+//UNBLOCK A USER
+const unBlockUser = async (uId) => {
+    try {
+        const dbcon = await dbPromise;
+        await dbcon.run("UPDATE user SET uBlocked = 0 WHERE uId = ?", [uId])
+        return { status: "Användare ej blockerad" }
+
+    } catch (error) {
+        throw new Error("Fel i databasen")
+    }
+
+}
+//ADD CATEGORY
+const addCategory = async (data) => {
+    try {
+
+        const dbcon = await dbPromise;
+        await dbcon.run("INSERT INTO category (cTitle,cDescription) VALUES(?,?)", [data.cTitle, data.cDescription]);
+        return { status: "Category blev tillagd" };
+    } catch (error) {
+        throw new Error("Gick ej att lägga till category");
+    }
+}
+//UPDATE CATEGORY
+const updateCategory = async (data) => {
+    try {
+        const dbcon = await dbPromise;
+        await dbcon.run("UPDATE category SET cTitle = ?,cDescription = ? WHERE cId = ?", [data.cTitle,data.cDescription,data.cId]);
+        return { status: "Kategorin blev uppdaterat" };
+    } catch (error) {
+        throw new Error("Gick inte att uppdatera Kategorin")
+    }
+}
+//DELETE CATEGORY
+const deleteCategory = async (data) => {
+    try {
+        
+        const dbcon = await dbPromise;
+        await dbcon.run("DELETE FROM category WHERE cId=?", [data]);
+        return { status: "Kategori blev borttaget" };
+    } catch (error) {
+        throw new error("Gick ej att ta bort Kategorin")
+    }
+}
+//GET ALL CATEGORYS
+const getCategorys = async () => {
+    try {
+        const dbcon = await dbPromise;
+        const prod = await dbcon.all('Select cId,cTitle,cDescription from category order by cTitle Desc')
+
+        return prod;
+    } catch (error) {
+        throw new Error("Något gick fel i databasen")
+    }
 }
 
 module.exports = {
-    getUsers: getUsers,
-    getProd: getProd,
-    getProdById: getProdById,
-    addProd: addProd,
-    deleteProd: deleteProd,
-    updateProd: updateProd,
-    getUserById: getUserById,
-    addUser: addUser,
-    logIn: logIn,
-    addShopCart : addShopCart,
-    getShopCart : getShopCart,
-    deleteShopCart : deleteShopCart,
-    getCartById : getCartById,
-    updateCartProd : updateCartProd,
-    voteUpDown : voteUpDown,
-    labelDuplicate : labelDuplicate,
-    blockUser : blockUser
+    getUsers: getUsers,//Klar 
+    getQuestions: getQuestions,//Klar 
+    getQuestById: getQuestById,//Klar 
+    addQuestion: addQuestion,//Klar 
+    deleteQuestion: deleteQuestion,//Klar 
+    updateQuestion: updateQuestion,//Klar 
+    voteDownQuestion : voteDownQuestion, //KLAR
+    voteUpQuestion : voteUpQuestion, //KLAR
+    getUserById: getUserById,//Klar
+    getUserByEmail: getUserByEmail, //Klar
+    addUser: addUser,//Klar 
+    logIn: logIn, //------
+    addAnswer : addAnswer,//Klar 
+    updateAnswer : updateAnswer,//Klar 
+    deleteAnswer : deleteAnswer,//Klar
+    getAnswers : getAnswers, //KLAR
+    getAnswerByQuestId : getAnswerByQuestId,//KLAR
+    voteUp: voteUp, // Klar
+    voteDown : voteDown, //Klar 
+    labelDuplicate: labelDuplicate,//-----
+    blockUser: blockUser, //Klar
+    unBlockUser : unBlockUser, //Klar
+    addCategory : addCategory, // Klar
+    updateCategory : updateCategory, //KLAR
+    deleteCategory : deleteCategory, //KLAR
+    getCategorys : getCategorys
 
 };

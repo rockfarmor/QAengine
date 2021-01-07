@@ -1,113 +1,110 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <title>Hello, world!</title>
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="style/style.css" />
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="style/login.css" />
+    <title>Log In</title>
 </head>
 
 <body>
-  <div id="app">
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
-      <a class="navbar-brand" href="#">Top navbar</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
-        aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarCollapse">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item active">
-            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link disabled" href="#">Disabled</a>
-          </li>
-        </ul>
-        <form class="form-inline mt-2 mt-md-0">
-          <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form>
-      </div>
-    </nav>
 
-    <main role="main" class="container">
-      
-      <div class="question">
-        <div class="profile">
+    <div class="card" id="app">
+        <article class="card-body">
+            <h4 class="card-title text-center mb-4 mt-1">Sign in</h4>
+            <hr>
+            <p class="text-success text-center">Enter Email and Password</p>
+            
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"> <i class="fa fa-user"></i> </span>
+                        </div>
+                        <input name="" class="form-control" placeholder="Email" type="email" id ="uEmail">
+                    </div> <!-- input-group.// -->
+                </div> <!-- form-group// -->
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+                        </div>
+                        <input class="form-control" placeholder="******" type="password" id="uPassword">
+                    </div> <!-- input-group.// -->
+                </div> <!-- form-group// -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-block" v-on:click="login"> Login </button>
+                </div> <!-- form-group// -->
+                <p class="text-center"><a href="#" class="btn">Forgot password?</a></p>
+                <a href="landing.html">HOME PAGE</a>
+            
+        </article>
+    </div> <!-- card.// -->
 
-          <div class="profile d-flex flex-row no-padding">
-            <div class="p-2 picture no-padding" ><img src="https://saj.se/wp-content/uploads/2015/03/boka-forelasare-Goran-Persson.jpg"></div>
-            <div class="p-2 name no-padding">
+    </aside> <!-- col.// -->
+    </div> <!-- row.// -->
 
-              <div class="no-padding">
-                <a href="#">Göran persson</a> 2021-01-12
-              </div>
-              <div class="no-padding">
-                Föredetta statsminister, numera konung
-              </div>
-            </div>
-          </div>
-          <div class="title">Kommer kronans värde någonsin att stabilisera?</div>
+    </div>
 
-
-
-        </div>
-      </div>
-
-      <div class="question">
-        <h1>Will I ever get a girlfriend?</h1>
-        <p class="lead">Hello will i ever get a grillfriend????+</p>
-        
-
-      </div>
-
-      <div class="question">
-        <h1>Will I ever get a girlfriend?</h1>
-        <p class="lead">Hello will i ever get a grillfriend????+</p>
-        
-
-
-      </div>
-
-      <div class="question">
-        <h1>Will I ever get a girlfriend?</h1>
-        <p class="lead">Hello will i ever get a grillfriend????+</p>
-
-      </div>
-
-
-    </main>
-
-  </div>
-  <!-- Optional JavaScript -->
-  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-
-  <!--jquery 3 slim version doesn't support Ajax-->
-  <script src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+        <script src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+        const vm = new Vue({
+            el: "#app",
+            data: {
 
-  <script>
-    const vm = new Vue({
-      el: "#app",
-      data: {
-        hej: "Du skall icke passera",
-      },
-      methods: {
 
-      }
-    });
+            },
+            methods: {
+                login() {
+                    const product = {
+                        uEmail: $('#uEmail').val(),
+                        uPassword: $('#uPassword').val(),
+                        }
+                        console.log(product);
+                     $.ajax({
+                        url: '/user/login',
+                        type: 'POST',
+                        data: product,
+                        success: (result) => {
+                            if(!result){
+                                //We logged in :D
+                                console.log(result)
+                                window.location.href = 'landing.html';
+                            }
+                            
+                        }
+                    });
+                }
 
-  </script>
+
+            }
+        });
+
+
+
+
+
+
+    </script>
 </body>
 
 </html>

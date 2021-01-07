@@ -7,6 +7,10 @@ const files = multer({ dest: 'files/' });
 const fs = require('fs').promises;
 const saltrounds = 10;
 
+let sess;
+
+
+
 //GENERATE HASHED PASSWORD
 const genPass = async (pwd) => {
     const salt = await bcrypt.genSalt(saltrounds);
@@ -32,10 +36,32 @@ routes.get('/users', async (req, res) => {
         res.json("Gick ej att hämta användare")
     }
 
+
+});
+
+routes.get('/loggedinuser', async (req, res) => {
+    try {
+
+        sess=req.session;
+        if(sess.user){
+            //We are loggged in and can return logged in user
+
+            
+            res.json(sess.user[0]);
+        } else {
+            res.send("You are not logged in, we need to fuck you")
+        }
+
+
+    } catch (error) {
+        console.log(error);
+        res.json("Gick ej att hämta användare")
+    }
+
 });
 
 //GET USER BY ID
-routes.get("/users/:id", async (req, res) => {
+routes.get("/user/:id", async (req, res) => {
     try {
         const check = parseInt(req.params.id, 10);
 
@@ -53,12 +79,12 @@ routes.get("/users/:id", async (req, res) => {
 });
 
 //ADD A USER
-routes.post('/users', async (req, res) => {
+routes.post('/user', async (req, res) => {
     const data = req.body;
     try {
         const check = req.body;
-        if (check.Email.length <= 50 && check.Firstname.length <= 20 && check.Lastname.length <= 20 && check.Password) {
-            const hashpass = await genPass(req.body.Password);
+        if (check.uEmail.length <= 100 && check.uPassword.length <= 100 && check.uFirstName.length <= 30 && check.uLastName.length <= 30 && check.uRank) {
+            const hashpass = await genPass(req.body.uPassword);
             const res = await dbService.addUser(req.body, hashpass);
         } else {
             console.log("Fel input");
@@ -77,19 +103,37 @@ routes.post('/user/login', async (req, res) => {
     const data = req.body;
 
     try {
-        if (data.Email.length > 4 && data.Password.length > 0) {
+        if (data.uEmail.length > 4 && data.uPassword.length > 0) {
             const data = req.body;
             const user = await dbService.logIn(data);
-
+            
+            
             if (user) {
-                const valid = await comparePass(data.Password, user.Password);
-                if (valid) {
-                    res.json(data.Email);
+                
+                const valid = await comparePass(toString(data.uPassword), toString(user));
+                
+                if (!valid) {
+
+                    //Set session variables
+                    sess=req.session;
+
+                    const userr = await dbService.getUserByEmail(data.uEmail);       
+                    sess.user=userr;
+
+
+
+
+
+
+
+
+                    res.json(valid);
+                    
                 } else {
                     res.send("Gick ej att logga in");
                 }
             } else {
-                res.send("Gick ej att logga in");
+                res.send(true);
             }
         } else {
             res.send("Fel input");
@@ -100,41 +144,35 @@ routes.post('/user/login', async (req, res) => {
     }
 });
 
-//GET ALL QUESTIONS
-routes.get('/index', async (req, res) => {
-    const question = {
-        id : 1,
-        title : "Teest",
-        text : "JAHWDAJWDJAWDJAWD",
-        date : "2020-01-06",
-        userId : "1",
-        category : 1,
-        isDuplicate : "0",
-        duplicateId : "0",
-        
+//GET ALL QUuserS
+routes.get('/question', async (req, res) => {
+    sess = req.session;
+    if(sess.user) {
+        console.log(sess.user)
     }
+    
     try {
-        res.json(question)
-        //const prod = await dbService.getProd();
-        //res.json(prod);
+        //res.json(question)
+        const prod = await dbService.getQuestions();
+        res.json(prod);
     } catch (error) {
         console.log(error);
         res.json("Kunde ej hämta alla Frågor");
     }
 });
 
-//ADD A PRODUCT
-routes.post('/products', async (req, res) => {
+
+
+//ADD A QUESTION
+routes.post('/question', async (req, res) => {
     const data = req.body;
     const check = req.body;
-    try {
 
-        console.log(req.body.Name);
-        // console.log(check.Description);
-        // console.log(check.picture);
-        //console.log(check.Price);
-        if (check.Name.length <= 50 && check.Description.length <= 200 && !isNaN(check.Price)) {
-            const resa = await dbService.addProd(req.body);
+    try {
+       
+
+        if (check.qsTitle.length <= 100 && !isNaN(check.uId) && !isNaN(check.cId)) {
+            const resa = await dbService.addQuestion(req.body);
             res.json(resa);
         } else {
             console.log("Wrong input");
@@ -142,13 +180,13 @@ routes.post('/products', async (req, res) => {
     }
     catch (error) {
         console.log(error);
-        res.json("Kunde inte lägga till produkt")
+        res.json("Kunde inte lägga till frågan")
     }
 
 });
 
-//GET A PRODUCT BY ID
-routes.get('/products/:id', async (req, res) => {
+//GET A QUESTION BY ID
+routes.get('/question/:id', async (req, res) => {
 
     const testquestion = {
         qId: 1,
@@ -156,54 +194,129 @@ routes.get('/products/:id', async (req, res) => {
         qTitle: "TestTitle",
         qText: "En lång text som ingen kommer läsa",
     }
-
-
-
+    const check = req.params.id;
     try {
-        res.json(testquestion)
+        if (!isNaN(check)) {
+            const question = await dbService.getQuestById(req.params.id);
+            res.json(question);
+        } else {
+            res.send("Fel validering");
+
+        }
     } catch (error) {
         console.log(error);
-        res.json("Kunde inte hämta produkt")
+        res.json("Kunde inte hämta Frågan")
     }
 });
 
-//DELETE A PRODUCT
-routes.delete('/products', async (req, res) => {
-    console.log(req.body.id)
-    try {
-        const check = parseInt(req.body.id, 10);
 
-        if (!isNaN(check)) {
-            const resa = await dbService.deleteProd(req.body.id);
+
+//DELETE A QUESTION
+routes.delete('/question', async (req, res) => {
+
+    try {
+        const check = req.body;
+
+        if (!isNaN(check.qsId)) {
+            const resa = await dbService.deleteQuestion(check.qsId);
+
             res.json(resa);
         } else {
             throw new error("Fel Validering");
         }
     } catch (error) {
         console.log(error);
-        res.json("Gick ej att ta bort produkten");
+        res.json("Gick ej att ta bort frågan");
     }
+
+});
+
+//Search question
+routes.get('/search/:name', async (req, res) => {
+    const err = { error_string: "No question was found with that name.", error_code: 0 };
+
+    try {
+        let found_question = [];
+        if (req.params.name) {
+
+            let prod = await dbService.getQuestions();
+            prod.forEach(question => {
+                if (question.qsTitle.toLowerCase().includes(req.params.name.toLowerCase())){
+                    found_question.push(question);
+                } else {
+                    if (question.qsText.toLowerCase().includes(req.params.name.toLowerCase())){
+                        found_question.push(question);
+                    }
+                }
+            });
+
+            if (found_question.length === 0) {
+                res.json(err);
+            } else {
+                res.json(found_question);
+            }
+        }
+    } catch (error) {
+        console.log(error);
+        res.json("Något gick fel");
+    }
+
+
+
 
 });
 
 
 
-//UPDATE A PRODUCT
-routes.put('/products/update', async (req, res) => {
-    const data = req.body;
-    console.log(req.body);
+
+//UPDATE A QUESTION
+routes.put('/question', async (req, res) => {
+    const check = req.body;
+    console.log(check)
     try {
-        if (data.Name.length <= 50 && data.Description.length <= 200 && !isNaN(data.Price) && !isNaN(data.id)) {
-            const resa = await dbService.updateProd(data);
+        if (check.qsTitle.length <= 100 && !isNaN(check.qsId) && !isNaN(check.cId)) {
+            const resa = await dbService.updateQuestion(check);
             res.json(resa);
         } else {
             throw new error("Fel Validering");
         }
     } catch (error) {
         console.log(error)
-        res.json("Gick ej att uppdatera produkten");
+        res.json("Gick ej att uppdatera frågan");
     }
 
+});
+//VOTE UP QUESTION
+routes.put('/question/upvote', async (req, res) => {
+    const data = req.body.qsId;
+    try {
+        if (!isNaN(data)) {
+            const resa = await dbService.voteUpQuestion(data);
+            res.json(resa);
+        } else {
+            throw new error("Fel validering")
+        }
+
+    } catch {
+        console.log(error)
+        res.json("Gick ej att voteup");
+    }
+});
+//VOTE DOWN QUESTION
+routes.put('/question/downvote', async (req, res) => {
+    const data = req.body.qsId;
+    try {
+        if (!isNaN(data)) {
+            const resa = await dbService.voteDownQuestion(data);
+            res.json(resa);
+        } else {
+            throw new error("Fel validering")
+        }
+
+    } catch {
+        console.log(error)
+        res.json("Gick ej att downvote");
+    }
 });
 
 
@@ -236,107 +349,234 @@ routes.post('/file', files.single('file'), async (req, res) => {
     }
 
 });
-//ADD A PRODUCT TO SHOPPINGCART
-routes.post('/products/cart', async (req, res) => {
+
+//ADD ANSWER
+routes.post('/answer', async (req, res) => {
     const data = req.body;
     const check = req.body;
-    
+
     try {
-        
-            const prod = await dbService.getCartById(req.body.id);
-          
-            if (prod[0]){
-                const prod1 = await dbService.updateCartProd((prod[0].quantity+1),prod[0].id);
-            }else{
-                const resa = await dbService.addShopCart(req.body);
-                res.json(resa);
-            }
-            
-       
+        if (check.aText.length > 0 && !isNaN(check.qsId) && !isNaN(check.uId)) {
+            const resa = await dbService.addAnswer(req.body);
+            res.json(resa);
+        } else {
+            console.log("Wrong input");
+        }
     }
     catch (error) {
         console.log(error);
-        res.json("Kunde inte lägga till produkt")
+        res.json("Kunde inte lägga till svaret")
     }
 
 });
-//GET ALL PRODUCTS FROM SHOPPINGCART
-routes.get('/allcart', async (req, res) => {
+//UPDATE ANSWER
+routes.put('/answer', async (req, res) => {
+    const check = req.body;
     try {
-        const prod = await dbService.getShopCart();
-        
-        res.json(prod);
-    } catch (error) {
-        console.log(error);
-        res.json("Kunde ej hämta alla produkter");
-    }
-});
-//DELETE A PRODUCT FROM SHOPPINGCART
-routes.delete('/allcart/delete/:id', async (req, res) => {
-    
-    try {
-        const check = parseInt(req.params.id, 10);
-        
-        if (!isNaN(check)) {
-            const resa = await dbService.deleteShopCart(req.params.id);
-            res.json(resa);
-        } else {
-            throw new error("Fel Validering");
-        }
-    } catch (error) {
-        console.log(error);
-        res.json("Gick ej att ta bort produkten");
-    }
-
-});
-//GET A PRODUCT BY ID FROM SHOPPINGCART
-routes.get('/allcart/:id', async (req, res) => {
-    try {
-        const check = parseInt(req.params.id, 10);
-
-        if (!isNaN(check)) {
-            const prod = await dbService.getCartById(req.params.id);
-            res.json(prod);
-        } else {
-            res.send("Fel validering");
-
-        }
-    } catch (error) {
-        console.log(error);
-        res.json("Kunde inte hämta produkt")
-    }
-});
-//UPDATE A PRODUCT FROM SHOPPINGCART
-routes.put('/allcart/update', async (req, res) => {
-    const data = req.body;
-   
-    try {
-        if (!isNaN(data.quantity) && !isNaN(data.id)) {
-            const resa = await dbService.updateCartProd(data.quantity,data.id);
+        if (check.aText.length > 0 && !isNaN(check.aId)) {
+            const resa = await dbService.updateAnswer(check);
             res.json(resa);
         } else {
             throw new error("Fel Validering");
         }
     } catch (error) {
         console.log(error)
-        res.json("Gick ej att uppdatera produkten");
+        res.json("Gick ej att uppdatera svaret");
     }
 
 });
-//VOTE UP OR VOTE DOWN
-routes.put('/home/blablal',async (req,res)=>{
+//DELETE ANSWER
+routes.delete('/answer', async (req, res) => {
 
+    try {
+        const check = req.body;
+
+        if (!isNaN(check.aId)) {
+            const resa = await dbService.deleteAnswer(check.aId);
+
+            res.json(resa);
+        } else {
+            throw new error("Fel Validering");
+        }
+    } catch (error) {
+        console.log(error);
+        res.json("Gick ej att ta bort svaret");
+    }
+
+});
+//GET ALL ANSWERS
+routes.get('/answer', async (req, res) => {
+   
+    try {
+        
+        const answer = await dbService.getAnswers();
+        res.json(answer);
+    } catch (error) {
+        console.log(error);
+        res.json("Kunde ej hämta alla svar");
+    }
+});
+//GET ANSWER BY QUESTION ID
+routes.get('/answer/:id', async (req, res) => {
+
+   
+    const check = req.params.id;
+
+
+    try {
+        if (!isNaN(check)) {
+            const answer = await dbService.getAnswerByQuestId(req.params.id);
+            res.json(answer);
+        } else {
+            res.send("Fel validering");
+
+        }
+    } catch (error) {
+        console.log(error);
+        res.json("Kunde inte hämta Svaret")
+    }
+});
+
+
+
+
+
+
+//VOTE UP ANSWER
+routes.put('/answer/upvote', async (req, res) => {
+    const data = req.body.aId;
+    try {
+        if (!isNaN(data)) {
+            const resa = await dbService.voteUp(data);
+            res.json(resa);
+        } else {
+            throw new error("Fel validering")
+        }
+
+    } catch {
+        console.log(error)
+        res.json("Gick ej att voteup");
+    }
+});
+//VOTE DOWN ANSWER
+routes.put('/answer/downvote', async (req, res) => {
+    const data = req.body.aId;
+    try {
+        if (!isNaN(data)) {
+            const resa = await dbService.voteDown(data);
+            res.json(resa);
+        } else {
+            throw new error("Fel validering")
+        }
+
+    } catch {
+        console.log(error)
+        res.json("Gick ej att downvote");
+    }
 });
 
 //LABEL AS DUPLICATE
-routes.put('/home/blablal',async (req,res)=>{
+routes.put('/home/blablal', async (req, res) => {
 
 });
 //BLOCK A USER
-routes.put('/home/blablal',async (req,res)=>{
+routes.put('/user/block', async (req, res) => {
+    const data = req.body.uId;
+    try {
+        if (!isNaN(data)) {
+            const resa = await dbService.blockUser(data);
+            res.json(resa);
+        } else {
+            throw new error("Fel validering")
+        }
+
+    } catch {
+        console.log(error)
+        res.json("Gick ej att blockera användaren");
+    }
+});
+//UNBLOCK A USER
+routes.put('/user/unblock', async (req, res) => {
+    const data = req.body.uId;
+    try {
+        if (!isNaN(data)) {
+            const resa = await dbService.unBlockUser(data);
+            res.json(resa);
+        } else {
+            throw new error("Fel validering")
+        }
+
+    } catch {
+        console.log(error)
+        res.json("Gick ej att unblockera användaren");
+    }
+});
+//ADD CATEGORY
+routes.post('/category', async (req, res) => {
+    const data = req.body;
+    const check = req.body;
+
+    try {
+        if (check.cTitle.length > 0 && check.cDescription.length > 0) {
+            const resa = await dbService.addCategory(req.body);
+            res.json(resa);
+        } else {
+            console.log("Wrong input");
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.json("Kunde inte lägga till category")
+    }
 
 });
+//UPDATE CATEGORY
+routes.put('/category', async (req, res) => {
+    const check = req.body;
+    try {
+        if (check.cTitle.length > 0 && check.cDescription.length > 0 && !isNaN(check.cId)) {
+            const resa = await dbService.updateCategory(check);
+            res.json(resa);
+        } else {
+            throw new error("Fel Validering");
+        }
+    } catch (error) {
+        console.log(error)
+        res.json("Gick ej att uppdatera kategorin");
+    }
 
+});
+//DELETE CATEGORY
+routes.delete('/category', async (req, res) => {
+
+    try {
+        const check = req.body;
+
+        if (!isNaN(check.cId)) {
+            const resa = await dbService.deleteCategory(check.cId);
+
+            res.json(resa);
+        } else {
+            throw new error("Fel Validering");
+        }
+    } catch (error) {
+        console.log(error);
+        res.json("Gick ej att ta bort kategorin");
+    }
+
+});
+//GET ALL CATEGORYS
+routes.get('/category', async (req, res) => {
+   
+    try {
+        
+        const prod = await dbService.getCategorys();
+        res.json(prod);
+    } catch (error) {
+        console.log(error);
+        res.json("Kunde ej hämta alla kategorier");
+    }
+});
 
 
 

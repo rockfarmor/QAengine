@@ -1,0 +1,36 @@
+CREATE TABLE questions (
+    qsId INTEGER PRIMARY KEY AUTOINCREMENT,
+    qsTitle VARCHAR(100),
+    qsText VARCHAR(10000),
+    qsDate datetime default current_timestamp,
+    uId INTEGER NOT NULL,
+    cId INTEGER NOT NULL,
+    isDuplicate BIT DEFAULT 0,
+    duplicatedId INTEGER,
+    qUpVotes INTEGER default 0,
+    qDownVotes INTEGER DEFAULT 0)
+
+CREATE TABLE user (
+    uId INTEGER PRIMARY KEY AUTOINCREMENT,
+    uEmail VARCHAR(100) NOT NULL,
+    uPassword VARCHAR(100) NOT NULL,
+    uFirstName VARCHAR(30) NOT NULL,
+    uLastName VARCHAR(30) NOT NULL,
+    uRank BIT NOT NULL,
+    uBlocked BIT DEFAULT 0
+    )
+CREATE TABLE answer (
+    aId INTEGER PRIMARY KEY AUTOINCREMENT,
+    qsId INTEGER NOT NULL,
+    uId INTEGER NOT NULL,
+    aText VARCHAR(10000) NOT NULL,
+    aDate datetime default current_timestamp,
+    aUpVotes INTEGER default 0,
+    aDownVotes INTEGER DEFAULT 0
+    )
+CREATE TABLE category (
+    cId INTEGER PRIMARY KEY AUTOINCREMENT,
+    cTitle VARCHAR(50) NOT NULL,
+    cDescription VARCHAR(100) NOT NULL)
+
+
