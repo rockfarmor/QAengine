@@ -85,9 +85,7 @@
                         type: 'POST',
                         data: product,
                         success: (result) => {
-                            if(!result){
-                                //We logged in :D
-                                console.log(result)
+                            if(result){
                                 window.location.href = 'landing.html';
                             }
                             

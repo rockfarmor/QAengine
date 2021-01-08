@@ -17,7 +17,7 @@ const dbPromise = (async () => {
 const getUsers = async () => {
     try {
         const dbCon = await dbPromise;
-        const users = await dbCon.all('SELECT uId,uEmail,uFirstName,uLastName,uRank from user order by uFirstName ASC');
+        const users = await dbCon.all('SELECT uId,uEmail,uFirstName,uLastName,uRank,url,uBlocked from user order by uFirstName ASC');
         return users;
     } catch (error) {
         throw new Error('Något gick fel i databasen');
@@ -28,7 +28,7 @@ const getUsers = async () => {
 const getUserById = async (data) => {
     try {
         const dbcon = await dbPromise;
-        const user = await dbcon.all("SELECT uId,uEmail,uFirstName,uLastName,uRank FROM user WHERE uId=?", [data]);
+        const user = await dbcon.all("SELECT uId,uEmail,uFirstName,uLastName,uRank,url,uBlocked FROM user WHERE uId=?", [data]);
         return user;
     } catch (error) {
         throw new Error('Något gick fel i databasen')
@@ -39,7 +39,7 @@ const getUserById = async (data) => {
 const getUserByEmail = async (data) => {
     try {
         const dbcon = await dbPromise;
-        const user = await dbcon.all("SELECT uId,uEmail,uFirstName,uLastName,uRank FROM user WHERE uEmail=?", [data]);
+        const user = await dbcon.all("SELECT uId,uEmail,uFirstName,uLastName,uRank,url,uBlocked FROM user WHERE uEmail=?", [data]);
         return user;
     } catch (error) {
         throw new Error('Något gick fel i databasen')
@@ -52,10 +52,30 @@ const getUserByEmail = async (data) => {
 const addUser = async (data, hashpass) => {
     try {
         const dbcon = await dbPromise;
-        await dbcon.run("INSERT INTO user (uEmail,uPassword,uFirstName,uLastName,uRank) VALUES(?,?,?,?,?)", [data.uEmail, hashpass, data.uFirstName, data.uLastName, data.uRank]);
+        await dbcon.run("INSERT INTO user (uEmail,uPassword,uFirstName,uLastName,uRank,url) VALUES(?,?,?,?,?,?)", [data.uEmail, hashpass, data.uFirstName, data.uLastName, data.uRank,data.url]);
         return { status: "ok" };
     } catch (error) {
         throw new Error("Gick ej att lägga till en user");
+    }
+}
+//DELETE A USER
+const deleteUser = async (data) => {
+    try {
+        const dbcon = await dbPromise;
+        await dbcon.run("DELETE FROM user WHERE uId=?", [data]);
+        return { status: "Användaren blev borttagen" };
+    } catch (error) {
+        throw new error("Gick ej att ta bort användaren")
+    }
+}
+//UPDATE A USER
+const updateUser = async (data) => {
+    try {
+        const dbcon = await dbPromise;
+        await dbcon.run("UPDATE user SET uEmail=?,uFirstName=?, uLastName=?,uRank=?,url=? WHERE uId = ?", [data.uEmail, data.uFirstName, data.uLastName, data.uRank,data.url]);
+        return { status: "Användaren blev uppdaterad" };
+    } catch (error) {
+        throw new Error("Gick inte att uppdatera användaren")
     }
 }
 
@@ -189,7 +209,14 @@ const deleteAnswer = async (data) => {
 const getAnswers = async () => {
     try {
         const dbcon = await dbPromise;
-        const answers = await dbcon.all('Select aId,qsId,uId,aText,aDate,aUpVotes,aDownVotes from answer order by aDate ASC')
+        let answers = await dbcon.all('Select aId,qsId,uId,aText,aDate,aUpVotes,aDownVotes from answer order by aDate Desc')
+
+        for (const id in answers) {
+            let answer = answers[id]
+
+            let user = await getUserById(answer.uId);
+            answers[id]["user"] = user[0]
+        }
 
         return answers;
     } catch (error) {
@@ -200,8 +227,16 @@ const getAnswers = async () => {
 const getAnswerByQuestId = async (data) => {
     try {
         const dbcon = await dbPromise;
-        const user = await dbcon.all("SELECT uId,aText,aDate,aUpVotes,aDownVotes FROM answer WHERE qsId=?", [data]);
-        return user;
+        const answers = await dbcon.all("SELECT aId,uId,qsId,aText,aDate,aUpVotes,aDownVotes FROM answer WHERE qsId=? order by aDate Desc", [data]);
+        
+        for (const id in answers) {
+            let answer = answers[id]
+
+            let user = await getUserById(answer.uId);
+            answers[id]["user"] = user[0]
+        }
+
+        return answers;
     } catch (error) {
         throw new Error('Något gick fel i databasen')
     }
@@ -209,7 +244,17 @@ const getAnswerByQuestId = async (data) => {
 
 
 
+const updateUrl = async (uId, url) => {
+    try {
+        const dbcon = await dbPromise;
+        await dbcon.run("UPDATE user SET url = ? WHERE uId = ?", [url, uId])
+        return { status: "updateUrl" }
 
+    } catch (error) {
+        throw new Error("Fel i databasen")
+    }
+
+}
 
 
 //VOTE UP
@@ -321,7 +366,10 @@ module.exports = {
     getUserById: getUserById,//Klar
     getUserByEmail: getUserByEmail, //Klar
     addUser: addUser,//Klar 
+    deleteUser : deleteUser,//KLar
+    updateUser : updateUser,//KLar
     logIn: logIn, //------
+    updateUrl: updateUrl, //klar
     addAnswer : addAnswer,//Klar 
     updateAnswer : updateAnswer,//Klar 
     deleteAnswer : deleteAnswer,//Klar

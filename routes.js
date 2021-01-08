@@ -42,14 +42,23 @@ routes.get('/users', async (req, res) => {
 routes.get('/loggedinuser', async (req, res) => {
     try {
 
-        sess=req.session;
-        if(sess.user){
+        sess = req.session;
+        if (sess.user) {
             //We are loggged in and can return logged in user
 
-            
-            res.json(sess.user[0]);
+            let obj = {
+                "loggedIn": true,
+                "user": sess.user[0]
+            }
+
+
+            res.json(obj);
         } else {
-            res.send("You are not logged in, we need to fuck you")
+            let obj = {
+                "loggedIn": false
+            }
+
+            res.json(obj);
         }
 
 
@@ -66,6 +75,7 @@ routes.get("/user/:id", async (req, res) => {
         const check = parseInt(req.params.id, 10);
 
         if (!isNaN(check)) {
+
             const user = await dbService.getUserById(req.params.id);
             res.json(user);
         } else {
@@ -96,6 +106,42 @@ routes.post('/user', async (req, res) => {
     }
     res.json({ status: "ok" });
 });
+//DELETE A USER
+routes.delete('/user', async (req, res) => {
+
+    try {
+        const check = req.body;
+        
+        if (!isNaN(check.uId)) {
+            const resa = await dbService.deleteUser(check.uId);
+
+            res.json(resa);
+        } else {
+            throw new Error("Fel Validering");
+        }
+    } catch (error) {
+        console.log(error);
+        res.json("Gick ej att ta bort användaren");
+    }
+
+});
+//UPDATE A USER
+routes.put('/user', async (req, res) => {
+    const check = req.body;
+    console.log(check)
+    try {
+        if (check.uEmail.length <= 100 && check.uPassword.length <= 100 && check.uFirstName.length <= 30 && check.uLastName.length <= 30 && check.uRank && check.url.length > 0) {
+            const resa = await dbService.updateUser(check);
+            res.json(resa);
+        } else {
+            throw new error("Fel Validering");
+        }
+    } catch (error) {
+        console.log(error)
+        res.json("Gick ej att uppdatera användaren");
+    }
+
+});
 
 //LOG IN USER
 routes.post('/user/login', async (req, res) => {
@@ -106,29 +152,33 @@ routes.post('/user/login', async (req, res) => {
         if (data.uEmail.length > 4 && data.uPassword.length > 0) {
             const data = req.body;
             const user = await dbService.logIn(data);
-            
-            
+
             if (user) {
-                
-                const valid = await comparePass(toString(data.uPassword), toString(user));
-                
-                if (!valid) {
+
+                let valid = await comparePass(data.uPassword, user["uPassword"]);
+                if (valid) {
 
                     //Set session variables
-                    sess=req.session;
+                    
+                    sess = req.session;
 
-                    const userr = await dbService.getUserByEmail(data.uEmail);       
-                    sess.user=userr;
-
-
-
-
-
-
-
+                    let userr = await dbService.getUserByEmail(data.uEmail);
+                    sess.user = userr;
+                    
+                    
+                    //Blocked
+                    if(userr[0].uBlocked == 1){
+                        req.session.destroy((err) => {
+                            if (err) {
+                                return console.log(err);
+                            }
+                            res.redirect('/');
+                        });
+                        valid = false;
+                    }
 
                     res.json(valid);
-                    
+
                 } else {
                     res.send("Gick ej att logga in");
                 }
@@ -146,14 +196,23 @@ routes.post('/user/login', async (req, res) => {
 
 //GET ALL QUuserS
 routes.get('/question', async (req, res) => {
-    sess = req.session;
-    if(sess.user) {
-        console.log(sess.user)
-    }
-    
     try {
         //res.json(question)
         const prod = await dbService.getQuestions();
+
+        for (const id in prod) {
+            let question = prod[id]
+            //Let's add user to all questions
+            const user = await dbService.getUserById(question.uId);
+            question["user"] = user[0];
+            //Get all answers
+            const answers = await dbService.getAnswerByQuestId(question.qsId);
+            question["answers"] = answers;
+
+        }
+        //const user = await dbService.getUserById(req.params.id);
+
+
         res.json(prod);
     } catch (error) {
         console.log(error);
@@ -169,7 +228,7 @@ routes.post('/question', async (req, res) => {
     const check = req.body;
 
     try {
-       
+
 
         if (check.qsTitle.length <= 100 && !isNaN(check.uId) && !isNaN(check.cId)) {
             const resa = await dbService.addQuestion(req.body);
@@ -197,8 +256,17 @@ routes.get('/question/:id', async (req, res) => {
     const check = req.params.id;
     try {
         if (!isNaN(check)) {
-            const question = await dbService.getQuestById(req.params.id);
-            res.json(question);
+            const questions = await dbService.getQuestById(req.params.id);
+            for (const id in questions) {
+                let question = questions[id]
+                //Let's add user to all questions
+                const user = await dbService.getUserById(question.uId);
+                question["user"] = user[0];
+                //Get all answers
+                const answers = await dbService.getAnswerByQuestId(question.qsId);
+                question["answers"] = answers;
+            }
+            res.json(questions[0]);
         } else {
             res.send("Fel validering");
 
@@ -240,19 +308,31 @@ routes.get('/search/:name', async (req, res) => {
         if (req.params.name) {
 
             let prod = await dbService.getQuestions();
-            prod.forEach(question => {
-                if (question.qsTitle.toLowerCase().includes(req.params.name.toLowerCase())){
+
+            for (const id in prod) {
+                let question = prod[id]
+
+                if (question.qsTitle.toLowerCase().includes(req.params.name.toLowerCase())) {
+
+
+                    const user = await dbService.getUserById(question.uId);
+                    question["user"] = user[0];
+
+
                     found_question.push(question);
                 } else {
-                    if (question.qsText.toLowerCase().includes(req.params.name.toLowerCase())){
+                    if (question.qsText.toLowerCase().includes(req.params.name.toLowerCase())) {
+                        const user = await dbService.getUserById(question.uId);
+                        question["user"] = user[0];
                         found_question.push(question);
                     }
                 }
-            });
+            }
 
             if (found_question.length === 0) {
                 res.json(err);
             } else {
+
                 res.json(found_question);
             }
         }
@@ -297,7 +377,7 @@ routes.put('/question/upvote', async (req, res) => {
             throw new error("Fel validering")
         }
 
-    } catch {
+    } catch (error) {
         console.log(error)
         res.json("Gick ej att voteup");
     }
@@ -313,7 +393,7 @@ routes.put('/question/downvote', async (req, res) => {
             throw new error("Fel validering")
         }
 
-    } catch {
+    } catch (error) {
         console.log(error)
         res.json("Gick ej att downvote");
     }
@@ -406,9 +486,9 @@ routes.delete('/answer', async (req, res) => {
 });
 //GET ALL ANSWERS
 routes.get('/answer', async (req, res) => {
-   
+
     try {
-        
+
         const answer = await dbService.getAnswers();
         res.json(answer);
     } catch (error) {
@@ -419,7 +499,7 @@ routes.get('/answer', async (req, res) => {
 //GET ANSWER BY QUESTION ID
 routes.get('/answer/:id', async (req, res) => {
 
-   
+
     const check = req.params.id;
 
 
@@ -450,10 +530,10 @@ routes.put('/answer/upvote', async (req, res) => {
             const resa = await dbService.voteUp(data);
             res.json(resa);
         } else {
-            throw new error("Fel validering")
+            throw new Error("Fel validering")
         }
 
-    } catch {
+    } catch (error) {
         console.log(error)
         res.json("Gick ej att voteup");
     }
@@ -466,10 +546,26 @@ routes.put('/answer/downvote', async (req, res) => {
             const resa = await dbService.voteDown(data);
             res.json(resa);
         } else {
-            throw new error("Fel validering")
+            throw new Error("Fel validering")
         }
 
-    } catch {
+    } catch (error) {
+        console.log(error)
+        res.json("Gick ej att downvote");
+    }
+});
+
+routes.put('/updateurl', async (req, res) => {
+    const data = req.body
+    try {
+        if (!isNaN(data.uId) && data.url) {
+            const resa = await dbService.updateUrl(data.uId, data.url);
+            res.json(resa);
+        } else {
+            throw new Error("Fel validering")
+        }
+
+    } catch (error) {
         console.log(error)
         res.json("Gick ej att downvote");
     }
@@ -480,33 +576,36 @@ routes.put('/home/blablal', async (req, res) => {
 
 });
 //BLOCK A USER
-routes.put('/user/block', async (req, res) => {
-    const data = req.body.uId;
+routes.put('/user/block/:id', async (req, res) => {
+    const data = req.params.id;
+    console.log(data);
+    console.log("TJaa")
     try {
         if (!isNaN(data)) {
+
             const resa = await dbService.blockUser(data);
             res.json(resa);
         } else {
-            throw new error("Fel validering")
+            throw new Error("Fel validering")
         }
 
-    } catch {
+    } catch (error) {
         console.log(error)
         res.json("Gick ej att blockera användaren");
     }
 });
 //UNBLOCK A USER
-routes.put('/user/unblock', async (req, res) => {
-    const data = req.body.uId;
+routes.put('/user/unblock/:id', async (req, res) => {
+    const data = req.params.id;
     try {
         if (!isNaN(data)) {
             const resa = await dbService.unBlockUser(data);
             res.json(resa);
         } else {
-            throw new error("Fel validering")
+            throw new Error("Fel validering")
         }
 
-    } catch {
+    } catch (error) {
         console.log(error)
         res.json("Gick ej att unblockera användaren");
     }
@@ -515,7 +614,7 @@ routes.put('/user/unblock', async (req, res) => {
 routes.post('/category', async (req, res) => {
     const data = req.body;
     const check = req.body;
-
+    console.log(check)
     try {
         if (check.cTitle.length > 0 && check.cDescription.length > 0) {
             const resa = await dbService.addCategory(req.body);
@@ -538,7 +637,7 @@ routes.put('/category', async (req, res) => {
             const resa = await dbService.updateCategory(check);
             res.json(resa);
         } else {
-            throw new error("Fel Validering");
+            throw new Error("Fel Validering");
         }
     } catch (error) {
         console.log(error)
@@ -557,7 +656,7 @@ routes.delete('/category', async (req, res) => {
 
             res.json(resa);
         } else {
-            throw new error("Fel Validering");
+            throw new Error("Fel Validering");
         }
     } catch (error) {
         console.log(error);
@@ -567,15 +666,25 @@ routes.delete('/category', async (req, res) => {
 });
 //GET ALL CATEGORYS
 routes.get('/category', async (req, res) => {
-   
+
     try {
-        
+
         const prod = await dbService.getCategorys();
         res.json(prod);
     } catch (error) {
         console.log(error);
         res.json("Kunde ej hämta alla kategorier");
     }
+});
+routes.get('/logout', (req, res) => {
+
+    req.session.destroy((err) => {
+        if (err) {
+            return console.log(err);
+        }
+        res.redirect('/');
+    });
+
 });
 
 

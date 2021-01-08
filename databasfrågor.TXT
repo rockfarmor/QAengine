@@ -17,7 +17,8 @@ CREATE TABLE user (
     uFirstName VARCHAR(30) NOT NULL,
     uLastName VARCHAR(30) NOT NULL,
     uRank BIT NOT NULL,
-    uBlocked BIT DEFAULT 0
+    uBlocked BIT DEFAULT 0,
+    url VARCHAR(255) DEFAULT "https://i.stack.imgur.com/l60Hf.png"
     )
 CREATE TABLE answer (
     aId INTEGER PRIMARY KEY AUTOINCREMENT,

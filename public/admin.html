@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Q&A</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="style/style.css" />
+
+</head>
+
+<body>
+    <div id="app">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+            <a class="navbar-brand" href="landing.html">QandA</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="landing.html">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Link</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">Disabled</a>
+                    </li>
+                </ul>
+                <div class="picture no-bottom-padding no-top-padding d-flex" v-if="user">
+                    <div class="p2">
+                        <img v-bind:src="user.url">
+                    </div>
+                    <div class="p2 logged-in">
+                        Inloggad som: <br />
+                        {{user.uEmail}}
+                    </div>
+                </div>
+                <form class="form-inline mt-2 mt-md-0">
+                    <input class="form-control mr-sm-2" v-on:keyup="keymonitor" type="text" id="searchField"
+                        placeholder="Search" aria-label="Search">
+
+                </form>
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" v-on:click=logout()>Log Out</button>
+            </div>
+        </nav>
+
+        <main role="main" class="container">
+
+            <div class="d-flex">
+                <div class="p-2 main-flex-side">
+
+                    <div class="categories">
+
+                        <div class="admincategory" v-for="category in categories">
+                            {{category.cTitle}}
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addModal">
+                                Add Category
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-2 main-flex">
+
+
+
+                    <div class="question" v-for="user in allUsers">
+                        <div class="profile">
+
+                            <div class="profile d-flex flex-row no-padding">
+                                <div class="p-2 picture no-padding"><img v-bind:src=user.url>
+                                </div>
+                                <div class="p-2 name no-top-padding no-bottom-padding">
+
+                                    <div class="no-padding">
+                                        <p><b>Email: </b>{{user.uEmail}}</p>
+                                    </div>
+                                    <div class="no-padding">
+                                        <div>
+
+                                            <p><b>Name: </b>{{user.uFirstName}} {{user.uLastName}}</p>
+                                            <p><b>Rank: </b>{{user.uRank}}</p>
+                                            <p><b>User Blocked: </b>{{user.uBlocked}}</p>
+
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="title"></div>
+                            <div class="question-text">
+
+                            </div>
+                            <div class="social d-flex flex-row">
+                                <div class="p-2  no-right-padding">
+
+                                </div>
+                                <div class="p-2 no-left-padding">
+                                    <button v-on:click=blockUser(user.uId)>Block User</button>
+                                </div>
+                                <div class="p-2 no-left-padding">
+                                    <button v-on:click=unBlockUser(user.uId)>Unblock User</button>
+                                </div>
+                                <div class="p-2">
+                                    <button type="submit" class="btn btn-danger float-right" v-on:click=deleteUser(user.uId)>Delete User</button>
+                                </div>
+                                <div class="p-2">
+                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#UpdateUser">
+                                        Update User
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="modal fade" id="UpdateUser">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Update User</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="formUpdate">
+
+                                        <div class="form-group">
+                                            <label for="Email">Email</label>
+                                            <input type="text" class="form-control" name="UpdateEmail" id="UpdateEmail">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Password">Password</label>
+                                            <input type="text" class="form-control" name="UpdatePassword" id="UpdatePassword">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Firstname">Firstname</label>
+                                            <input type="text" class="form-control" name="UpdateFirstname"
+                                                id="UpdateFirstname">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Lastname">Lastname</label>
+                                            <input type="text" class="form-control" name="UpdateLastname" id="UpdateLastname">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Rank">Rank</label>
+                                            <input type="text" class="form-control" name="UpdateRank" id="UpdateRank">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="url">Profile Picture URL</label>
+                                            <input type="text" class="form-control" name="UpdateUrl" id="UpdateUrl">
+                                        </div>
+
+
+
+                                        <div class="form-group">
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                            <input type="submit" class="btn btn-primary float-right" value="Update User">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="addModal">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Add Category</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="formUpdate">
+
+                                        <div class="form-group">
+                                            <label for="Name">Title</label>
+                                            <input type="text" class="form-control" name="addTitle" id="addTitle">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Description">Description</label>
+                                            <input type="text" class="form-control" name="addDescription"
+                                                id="addDescription">
+                                        </div>
+
+
+
+                                        <div class="form-group">
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                            <input type="submit" class="btn btn-primary float-right"
+                                                value="Add Category" v-on:click=addCategory()>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <div class="p-2 main-flex-side">
+                    <div>
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUser">
+                            Add User
+                        </button>
+                    </div>
+                    <div class="modal fade" id="addUser">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Add Category</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="formUpdate">
+
+                                        <div class="form-group">
+                                            <label for="Email">Email</label>
+                                            <input type="text" class="form-control" name="addEmail" id="addEmail">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Password">Password</label>
+                                            <input type="text" class="form-control" name="addPassword" id="addPassword">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Firstname">Firstname</label>
+                                            <input type="text" class="form-control" name="addFirstname"
+                                                id="addFirstname">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Lastname">Lastname</label>
+                                            <input type="text" class="form-control" name="addLastname" id="addLastname">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Rank">Rank</label>
+                                            <input type="text" class="form-control" name="addRank" id="addRank">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="url">Profile Picture URL</label>
+                                            <input type="text" class="form-control" name="addUrl" id="addUrl">
+                                        </div>
+
+
+
+                                        <div class="form-group">
+                                            <button type="button" class="btn btn-danger"
+                                                data-dismiss="modal">Close</button>
+                                            <input type="submit" class="btn btn-primary float-right" value="Add User"
+                                                v-on:click=addUser()>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+        </main>
+
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+
+    <!--jquery 3 slim version doesn't support Ajax-->
+    <script src="http://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <script>
+        const vm = new Vue({
+            el: "#app",
+            data: {
+                loggedInUser: {},
+                category_id: -1,
+                categoriess: [],
+                categories: [{
+                    "cId": -1,
+                    "cTitle": "All",
+                    "cDescription": "All categories"
+                }],
+                user: {},
+                questions: [],
+                allUsers: [],
+
+            },
+            methods: {
+                loadUsers: function () {
+                    //Load  questions
+                    $.ajax({
+                        url: '/users',
+                        type: 'GET',
+                        success: (data) => {
+                            console.log(data);
+                            this.allUsers = data;
+                        }
+
+
+                    });
+                },
+                blockUser(id) {
+                    console.log(id)
+                    $.ajax({
+                        url: '/user/block/' + id,
+                        type: 'PUT',
+
+
+                        success: () => {
+                            vm.loadUsers()
+
+
+                        }
+                    });
+                },
+                unBlockUser(id) {
+                    console.log(id)
+                    $.ajax({
+                        url: '/user/unblock/' + id,
+                        type: 'PUT',
+
+
+                        success: () => {
+                            vm.loadUsers()
+
+
+                        }
+                    });
+                },
+
+
+
+                //update questions
+
+                loadCategories: function () {
+                    //Update Categories
+                    $.ajax({
+                        url: '/category',
+                        type: 'GET',
+                        success: (data) => {
+
+
+                            this.categories = data
+
+
+                        }
+                    });
+
+                    //update questions
+                },
+                addCategory() {
+                    const category = {
+                        cTitle: $('#addTitle').val(),
+                        cDescription: $('#addDescription').val()
+                    }
+                    $.ajax({
+                        url: '/category',
+                        type: 'POST',
+                        data: category,
+                        success: () => {
+
+                            $('#addModal').modal('hide');
+                            this.clearAddForm();
+                        }
+                    });
+                },
+                clearAddForm() {
+                    $("#addTitle").val("")
+                    $("#addDescription").val("")
+                    $('#addEmail').val("")
+                    $('#addPassword').val("")
+                    $('#addFirstname').val("")
+                    $('#addLastname').val("")
+                    $('#addRank').val("")
+                    $('#addUrl').val("")
+
+
+                },
+                addUser() {
+                    const user = {
+                        uEmail: $('#addEmail').val(),
+                        uPassword: $('#addPassword').val(),
+                        uFirstName: $('#addFirstname').val(),
+                        uLastName: $('#addLastname').val(),
+                        uRank: $('#addRank').val(),
+                        url: $('#addUrl').val(),
+
+                    }
+                    console.log(user)
+                    $.ajax({
+                        url: '/user/',
+                        type: 'POST',
+                        data: user,
+                        success: () => {
+
+                            $('#addUser').modal('hide');
+                            this.clearAddForm();
+                            vm.loadUsers();
+                        }
+                    });
+                },
+                deleteUser(id) {
+
+                    $.ajax({
+                        url: '/user',
+                        type: 'DELETE',
+                        data: {"uId":id},
+                        success: () => {
+                            vm.loadUsers()
+                        }
+                    });
+                },
+
+
+                loadQuestions: function () {
+                    //Load  questions
+                    $.ajax({
+                        url: '/question',
+                        type: 'GET',
+                        success: (data) => {
+                            if (this.category_id == -1) {
+                                this.questions = data
+                            } else {
+                                //Filter out by category
+                                this.questions = []
+                                for (const id in data) {
+                                    let question = data[id]
+                                    if (question.cId == this.category_id)
+                                        this.questions.push(question)
+                                }
+
+                            }
+                            this.$nextTick(() => {
+                                hideAll()
+                            });
+
+                        }
+                    });
+
+
+
+                    //update questions
+                },
+
+                getLoggedIn: function () {
+
+
+                    $.ajax({
+                        url: '/loggedinuser',
+                        type: 'GET',
+                        success: (data) => {
+                            console.log("We try to get user")
+                            console.log(data)
+
+
+                            if (data["loggedIn"]) {
+                                this.user = data["user"]
+                            } else {
+                                console.log("You shall not pass")
+                                window.location.href = "/";
+                            }
+
+
+
+                        },
+                        error: (data) => {
+                            console.log("Error", data)
+                        }
+                    });
+
+                },
+                logout() {
+
+                    $.ajax({
+                        url: '/logout',
+                        type: 'GET',
+                        data: this.user,
+                        success: () => {
+                            this.user = {}
+                            window.location.href = "/";
+                        }
+                    });
+                },
+
+                upVoteQuestion: function (id) {
+                    let dat = { qsId: id }
+                    ///question/upvote
+                    $.ajax({
+                        url: '/question/upvote',
+                        data: dat,
+                        type: 'PUT',
+                        success: function (data) {
+                            vm.loadQuestions()
+
+                        },
+                        error: function (data) {
+                            console.log("Error", data)
+                        }
+                    });
+                },
+                downVoteQuestion: function (id) {
+                    let dat = { qsId: id }
+                    $.ajax({
+                        url: '/question/downvote',
+                        data: dat,
+                        type: 'PUT',
+                        success: function (data) {
+                            vm.loadQuestions()
+                        },
+                        error: function (data) {
+                            console.log("Error", data)
+                        }
+                    });
+                },
+
+
+
+                updateCategory: function (id) {
+                    this.category_id = id
+                    this.loadQuestions()
+                },
+                showAnswers: function (id) {
+                    $(id).fadeToggle();
+                },
+
+                keymonitor: function (event) {
+
+                    let q = $("#searchField").val();
+
+
+
+                    if (q) {
+                        $.ajax({
+                            url: '/search/' + q,
+                            type: 'GET',
+                            success: (data) => {
+
+                                this.questions = data
+
+                                this.$nextTick(() => {
+                                    hideAll()
+                                });
+
+                            }
+                        });
+                    }
+
+                },
+            },
+
+        });
+        vm.getLoggedIn()
+        vm.loadCategories()
+        vm.loadQuestions()
+        vm.loadUsers()
+        //From stackoverflow https://stackoverflow.com/questions/17772260/textarea-auto-height
+        function auto_grow(element) {
+            element.style.height = "5px";
+            element.style.height = (element.scrollHeight) + "px";
+        }
+
+        function showComments(id) {
+            $(id).fadeToggle();
+        }
+
+        function hideById(id) {
+            $(id).hide()
+        }
+
+        function showAskText() {
+            $("#ask-textarea").show()
+        }
+
+        function resetQuestion() {
+
+            $("#ask-title").val("")
+            $("#ask-textarea").val("")
+            $("#ask-textarea").hide()
+        }
+
+        function sendQuestion() {
+            let title = $("#ask-title").val()
+            let text = $("#ask-textarea").val()
+            let categoryid = $("#inputGroupSelect01").val()
+            let userId = 1
+
+            dat = {
+                "qsTitle": title,
+                "qsText": text,
+                "uId": userId,
+                "cId": categoryid,
+            }
+
+            $.ajax({
+                url: '/question',
+                data: dat,
+                type: 'POST',
+                success: function (data) {
+                    vm.loadQuestions()
+                    resetQuestion()
+                },
+                error: function (data) {
+                    console.log("Error", data)
+
+                }
+            });
+
+
+
+            console.log(dat)
+
+        }
+
+
+
+
+
+
+
+
+        function hideAll() {
+            $(".comment-section-main").hide()
+        }
+
+
+        $(document).ready(function () {
+
+
+
+            $("#ask-textarea").hide()
+            $(".comment-section-main").hide()
+
+            $(".commment-area").height(5)
+
+
+
+
+        });
+
+
+
+
+
+    </script>
+</body>
+
+</html>

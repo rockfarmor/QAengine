@@ -13,6 +13,43 @@ body {
     padding: 10px;
 }
 
+.form-edit {
+    
+    background-color: black;
+
+    -webkit-mask-image: url(../images/icons/tools.svg);
+    -webkit-mask-size: cover;
+    -webkit-mask-size: contain;
+
+    mask-image: url(../images/icons/tools.svg);
+    mask-size: cover;
+    mask-size: contain;
+
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    
+}
+
+.form-delete {
+    
+    background-color: black;
+
+    -webkit-mask-image: url(../images/icons/x-circle-fill.svg);
+    -webkit-mask-size: cover;
+    -webkit-mask-size: contain;
+
+    mask-image: url(../images/icons/x-circle-fill.svg);
+    mask-size: cover;
+    mask-size: contain;
+
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    
+}
+
+
 .logged-in {
     font-size: 11px;
     color: white;
@@ -176,6 +213,15 @@ textarea {
     box-shadow:inset 1px 1px 1px 1px rgba(163, 163, 163, 0.342);
     background: rgb(255, 255, 255);
     cursor: pointer;
+}
+.admincategory{
+    text-align: center;
+    padding: 5px;
+    border: 1px solid rgb(0,0,0,0.5);
+    margin-bottom: 10px;
+    box-shadow:inset 1px 1px 1px 1px rgba(163, 163, 163, 0.342);
+    background: rgb(255, 255, 255);
+   
 }
 
 .category.active {
