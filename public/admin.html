@@ -37,7 +37,7 @@
                         <img v-bind:src="user.url">
                     </div>
                     <div class="p2 logged-in">
-                        Inloggad som: <br />
+                        Logged in as: <br />
                         {{user.uEmail}}
                     </div>
                 </div>
@@ -59,15 +59,60 @@
 
                         <div class="admincategory" v-for="category in categories">
                             {{category.cTitle}}
+
+                            <button type="button" class="btn btn-primary updateCategory" data-toggle="modal"
+                                data-target="#UpdateCategory"
+                                v-on:click=showCategoryInUpdateForm(category.cId)>Update</button>
                         </div>
+
                         <div>
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addModal">
                                 Add Category
                             </button>
                         </div>
                     </div>
-                </div>
 
+                </div>
+                <div class="modal fade" id="UpdateCategory">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Update Category</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="formUpdate">
+                                    <div class="form-group">
+                                        <label for="Id">Id</label>
+                                        <input type="text" class="form-control" name="UpdateCatId" id="UpdateCatId"
+                                            readonly>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="Title">Title</label>
+                                        <input type="text" class="form-control" name="UpdateCatTitle"
+                                            id="UpdateCatTitle">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="Description">Description</label>
+                                        <input type="text" class="form-control" name="UpdateCatDescription"
+                                            id="UpdateCatDescription">
+                                    </div>
+
+
+
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                        <input type="submit" class="btn btn-primary float-right" value="Update Category" v-on:click="updateCat()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="p-2 main-flex">
 
 
@@ -111,10 +156,12 @@
                                     <button v-on:click=unBlockUser(user.uId)>Unblock User</button>
                                 </div>
                                 <div class="p-2">
-                                    <button type="submit" class="btn btn-danger float-right" v-on:click=deleteUser(user.uId)>Delete User</button>
+                                    <button type="submit" class="btn btn-danger float-right"
+                                        v-on:click=deleteUser(user.uId)>Delete User</button>
                                 </div>
                                 <div class="p-2">
-                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#UpdateUser">
+                                    <button type="button" class="btn btn-primary" data-toggle="modal"
+                                        data-target="#UpdateUser" v-on:click="showUserInUpdateForm(user.uId)">
                                         Update User
                                     </button>
                                 </div>
@@ -134,15 +181,17 @@
                                 </div>
                                 <div class="modal-body">
                                     <div id="formUpdate">
+                                        <div class="form-group">
+                                            <label for="Id">Id</label>
+                                            <input type="text" class="form-control" name="UpdateId" id="UpdateId"
+                                                readonly>
+                                        </div>
 
                                         <div class="form-group">
                                             <label for="Email">Email</label>
                                             <input type="text" class="form-control" name="UpdateEmail" id="UpdateEmail">
                                         </div>
-                                        <div class="form-group">
-                                            <label for="Password">Password</label>
-                                            <input type="text" class="form-control" name="UpdatePassword" id="UpdatePassword">
-                                        </div>
+
                                         <div class="form-group">
                                             <label for="Firstname">Firstname</label>
                                             <input type="text" class="form-control" name="UpdateFirstname"
@@ -150,7 +199,8 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="Lastname">Lastname</label>
-                                            <input type="text" class="form-control" name="UpdateLastname" id="UpdateLastname">
+                                            <input type="text" class="form-control" name="UpdateLastname"
+                                                id="UpdateLastname">
                                         </div>
                                         <div class="form-group">
                                             <label for="Rank">Rank</label>
@@ -162,11 +212,11 @@
                                         </div>
 
 
-
                                         <div class="form-group">
                                             <button type="button" class="btn btn-danger"
                                                 data-dismiss="modal">Close</button>
-                                            <input type="submit" class="btn btn-primary float-right" value="Update User">
+                                            <input type="submit" class="btn btn-primary float-right" value="Update User"
+                                                v-on:click=updateUser()>
                                         </div>
                                     </div>
                                 </div>
@@ -184,7 +234,7 @@
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <div id="formUpdate">
+                                    <div id="addForm">
 
                                         <div class="form-group">
                                             <label for="Name">Title</label>
@@ -381,6 +431,7 @@
 
                             $('#addModal').modal('hide');
                             this.clearAddForm();
+                            vm.loadCategories()
                         }
                     });
                 },
@@ -406,7 +457,7 @@
                         url: $('#addUrl').val(),
 
                     }
-                    console.log(user)
+
                     $.ajax({
                         url: '/user/',
                         type: 'POST',
@@ -424,12 +475,96 @@
                     $.ajax({
                         url: '/user',
                         type: 'DELETE',
-                        data: {"uId":id},
+                        data: { "uId": id },
                         success: () => {
                             vm.loadUsers()
                         }
                     });
                 },
+                showUserInUpdateForm(id) {
+
+                    $.ajax({
+                        url: '/user/' + id,
+                        type: 'GET',
+                        success: (user) => {
+                            console.log(user)
+                            user = user[0];
+                            $('#UpdateId').val(user.uId);
+                            $('#UpdateEmail').val(user.uEmail);
+                            $('#UpdateFirstname').val(user.uFirstName);
+                            $('#UpdateLastname').val(user.uLastName);
+                            $('#UpdateRank').val(user.uRank);
+                            $('#UpdateUrl').val(user.url);
+
+                        }
+
+                    });
+                    $('#UpdateUser').modal('show');
+                },
+                 //UPDATE CATEGORY
+                updateCat : function(){
+                    var category = {
+                        cId: $('#UpdateCategory #UpdateCatId').val(),
+                        cTitle: $('#UpdateCategory #UpdateCatTitle').val(),
+                        cDescription: $('#UpdateCategory #UpdateCatDescription').val(),
+
+                    }
+                    $.ajax({
+                        url: '/category',
+                        type: 'PUT',
+                        data: category,
+
+                        success: () => {
+                            vm.loadCategories()
+                            $('#UpdateCategory').modal('hide');
+                        },
+
+                    });
+                },
+                updateUser() {
+                    var user = {
+                        uId: $('#UpdateUser #UpdateId').val(),
+                        uEmail: $('#UpdateUser #UpdateEmail').val(),
+                        uFirstName: $('#UpdateUser #UpdateFirstname').val(),
+                        uLastName: $('#UpdateUser #UpdateLastname').val(),
+                        uRank: $('#UpdateUser #UpdateRank').val(),
+                        url: $('#UpdateUser #UpdateUrl').val()
+                    }
+
+
+                    $.ajax({
+                        url: '/user',
+                        type: 'PUT',
+                        data: user,
+
+                        success: () => {
+                            vm.loadUsers()
+                            $('#UpdateUser').modal('hide');
+                        },
+
+                    });
+                },
+                //UPDATE CATEGORY
+                showCategoryInUpdateForm(id) {
+
+                    $.ajax({
+                        url: '/category/' + id,
+                        type: 'GET',
+                        success: (category) => {
+
+                            category = category[0];
+                            $('#UpdateCatId').val(category.cId);
+                            $('#UpdateCatTitle').val(category.cTitle);
+                            $('#UpdateCatDescription').val(category.cDescription);
+
+
+                        }
+
+                    });
+                    $('#UpdateCategory').modal('show');
+                },
+               
+                
 
 
                 loadQuestions: function () {

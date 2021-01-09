@@ -72,7 +72,7 @@ const deleteUser = async (data) => {
 const updateUser = async (data) => {
     try {
         const dbcon = await dbPromise;
-        await dbcon.run("UPDATE user SET uEmail=?,uFirstName=?, uLastName=?,uRank=?,url=? WHERE uId = ?", [data.uEmail, data.uFirstName, data.uLastName, data.uRank,data.url]);
+        await dbcon.run("UPDATE user SET uEmail=?,uFirstName=?, uLastName=?,uRank=?,url=? WHERE uId = ?", [data.uEmail, data.uFirstName, data.uLastName, data.uRank,data.url,data.uId]);
         return { status: "Användaren blev uppdaterad" };
     } catch (error) {
         throw new Error("Gick inte att uppdatera användaren")
@@ -223,6 +223,27 @@ const getAnswers = async () => {
         throw new Error("Något gick fel i databasen")
     }
 }
+
+
+//GET ANSWER BY QUESTION ID
+const getAnswerById = async (data) => {
+    try {
+        const dbcon = await dbPromise;
+        const answers = await dbcon.all("SELECT aId,uId,qsId,aText,aDate,aUpVotes,aDownVotes FROM answer WHERE aId=? order by aDate Desc", [data]);
+        
+        for (const id in answers) {
+            let answer = answers[id]
+
+            let user = await getUserById(answer.uId);
+            answers[id]["user"] = user[0]
+        }
+
+        return answers;
+    } catch (error) {
+        throw new Error('Något gick fel i databasen')
+    }
+}
+
 //GET ANSWER BY QUESTION ID
 const getAnswerByQuestId = async (data) => {
     try {
@@ -353,6 +374,19 @@ const getCategorys = async () => {
         throw new Error("Något gick fel i databasen")
     }
 }
+//GET ANSWER BY QUESTION ID
+const getCategoryById = async (data) => {
+    try {
+        const dbcon = await dbPromise;
+        const category = await dbcon.all("SELECT cId,cTitle,cDescription FROM category WHERE cId=?", [data]);
+        
+        
+
+        return category;
+    } catch (error) {
+        throw new Error('Något gick fel i databasen')
+    }
+}
 
 module.exports = {
     getUsers: getUsers,//Klar 
@@ -375,6 +409,7 @@ module.exports = {
     deleteAnswer : deleteAnswer,//Klar
     getAnswers : getAnswers, //KLAR
     getAnswerByQuestId : getAnswerByQuestId,//KLAR
+    getAnswerById : getAnswerById, //Klar
     voteUp: voteUp, // Klar
     voteDown : voteDown, //Klar 
     labelDuplicate: labelDuplicate,//-----
@@ -383,6 +418,7 @@ module.exports = {
     addCategory : addCategory, // Klar
     updateCategory : updateCategory, //KLAR
     deleteCategory : deleteCategory, //KLAR
-    getCategorys : getCategorys
+    getCategorys : getCategorys,
+    getCategoryById : getCategoryById
 
 };

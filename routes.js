@@ -130,7 +130,7 @@ routes.put('/user', async (req, res) => {
     const check = req.body;
     console.log(check)
     try {
-        if (check.uEmail.length <= 100 && check.uPassword.length <= 100 && check.uFirstName.length <= 30 && check.uLastName.length <= 30 && check.uRank && check.url.length > 0) {
+        if (check.uEmail.length <= 100 && check.uFirstName.length <= 30 && check.uLastName.length <= 30 && check.uRank && check.url.length > 0) {
             const resa = await dbService.updateUser(check);
             res.json(resa);
         } else {
@@ -317,13 +317,16 @@ routes.get('/search/:name', async (req, res) => {
 
                     const user = await dbService.getUserById(question.uId);
                     question["user"] = user[0];
-
+                    const answers = await dbService.getAnswerByQuestId(question.qsId);
+                    question["answers"] = answers;
 
                     found_question.push(question);
                 } else {
                     if (question.qsText.toLowerCase().includes(req.params.name.toLowerCase())) {
                         const user = await dbService.getUserById(question.uId);
                         question["user"] = user[0];
+                        const answers = await dbService.getAnswerByQuestId(question.qsId);
+                        question["answers"] = answers;
                         found_question.push(question);
                     }
                 }
@@ -496,6 +499,28 @@ routes.get('/answer', async (req, res) => {
         res.json("Kunde ej hämta alla svar");
     }
 });
+
+//GET ANSWER BY ID
+routes.get('/answers/:id', async (req, res) => {
+
+
+    const check = req.params.id;
+
+
+    try {
+        if (!isNaN(check)) {
+            const answer = await dbService.getAnswerById(req.params.id);
+            res.json(answer);
+        } else {
+            res.send("Fel validering");
+
+        }
+    } catch (error) {
+        console.log(error);
+        res.json("Kunde inte hämta Svaret")
+    }
+});
+
 //GET ANSWER BY QUESTION ID
 routes.get('/answer/:id', async (req, res) => {
 
@@ -632,6 +657,7 @@ routes.post('/category', async (req, res) => {
 //UPDATE CATEGORY
 routes.put('/category', async (req, res) => {
     const check = req.body;
+    console.log(check)
     try {
         if (check.cTitle.length > 0 && check.cDescription.length > 0 && !isNaN(check.cId)) {
             const resa = await dbService.updateCategory(check);
@@ -685,6 +711,26 @@ routes.get('/logout', (req, res) => {
         res.redirect('/');
     });
 
+});
+//GET CATEGORY BY ID
+routes.get('/category/:id', async (req, res) => {
+
+
+    const check = req.params.id;
+
+
+    try {
+        if (!isNaN(check)) {
+            const answer = await dbService.getCategoryById(req.params.id);
+            res.json(answer);
+        } else {
+            res.send("Fel validering");
+
+        }
+    } catch (error) {
+        console.log(error);
+        res.json("Kunde inte hämta Kategorin")
+    }
 });
 
 

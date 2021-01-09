@@ -221,7 +221,7 @@ textarea {
     margin-bottom: 10px;
     box-shadow:inset 1px 1px 1px 1px rgba(163, 163, 163, 0.342);
     background: rgb(255, 255, 255);
-   
+    height: 100%;
 }
 
 .category.active {
@@ -232,4 +232,11 @@ textarea {
 .category:hover {
     background: rgb(90, 90, 90);
     color: white;
+}
+.updateCategory{
+    height: 1.5rem;
+    padding: 0;
+    width: 50%;
+    display: block;
+    margin: auto;
 }

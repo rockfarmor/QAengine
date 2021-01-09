@@ -37,7 +37,7 @@
             <img v-bind:src="user.url">
           </div>
           <div class="p2 logged-in">
-            Inloggad som: <br />
+            Logged in as: <br />
             {{user.uEmail}}
           </div>
         </div>
@@ -106,7 +106,7 @@
           </div>
 
 
-          <div class="question" v-for="question in questions">
+          <div class="question" v-for="question in questions" v-if="questions">
             <div class="profile" v-if="question.user">
 
               <div class="profile d-flex flex-row no-padding">
@@ -124,21 +124,50 @@
 
                   <div class="d-flex">
                     <div class="p-2">
-                      <div class="form-edit"></div>
+                      <div class="form-edit" v-on:click="showUpdateQuestion(question.qsId)"></div>
                     </div>
                     <div class="p-2">
-                      <div class="form-delete" data-toggle="modal" data-target="#removeModal" v-on:click="selectQuestion(question.qsId)"></div>
+                      <div class="form-delete" data-toggle="modal" data-target="#removeModal"
+                        v-on:click="selectQuestion(question.qsId)"></div>
                     </div>
                   </div>
-
-
-
                 </div>
               </div>
-              <div class="title">{{question.qsTitle}}</div>
-              <div class="question-text">
-                {{question.qsText}}
+              <div class="no-padding main-question" v-bind:id="'main-question'+question.qsId">
+                <div class="title" v-bind:id="'qTitle'+question.qsId">{{question.qsTitle}}</div>
+                <div class="question-text" v-bind:id="'qText'+question.qsId">
+                  {{question.qsText}}
+                </div>
               </div>
+              <div class="no-padding update-question" v-bind:id="'update-question-form'+question.qsId">
+                <div class="d-flex">
+
+                  <div class="p-2 comment-area-parent no-bottom-padding no-top-padding">
+                    <div class="input-group mb-3">
+
+                      <input type="text" class="form-control" v-bind:id="'question-title'+question.qsId"
+                        v-bind:value="question.qsTitle" placeholder="Title of question" aria-label="Username"
+                        aria-describedby="basic-addon1">
+                    </div>
+                    <textarea class="commment-area" placeholder="Question text" v-bind:value="question.qsText"
+                      v-bind:id="'question-textarea'+question.qsId" oninput="auto_grow(this)"></textarea>
+                  </div>
+                  <div class="p-2 no-bottom-padding no-top-padding">
+                    <button type="submit" class="btn btn-primary mb-2"
+                      v-on:click="updateQuestion(question.qsId, question.cId)">Update</button>
+                    <div>
+                      <button type="submit" class="btn btn-primary mb-2"
+                        v-on:click="hideUpdateQuestion(question.qsId)">Close</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+
+
+
+
               <div class="social d-flex flex-row">
                 <div class="p-2  no-right-padding">
                   <button class="upvote" v-on:click="upVoteQuestion(question.qsId)"><img
@@ -179,12 +208,47 @@
                     <div class="profile d-flex flex-row no-padding">
                       <div class="p-2 picture no-padding"><img v-bind:src="comment.user.url">
                       </div>
-                      <div class="p-2 name no-top-padding no-bottom-padding">
-                        <div class="no-padding">
-                          <a href="#">{{comment.user.uFirstName}} {{comment.user.uLastName}}</a> {{comment.aDate}}
+                      <div class="p-2 name mr-auto no-top-padding no-bottom-padding" style="width: 100%">
+                        <div class="d-flex">
+
+
+                          <div class="p-2 mr-auto no-padding" style="width: 100%">
+                            <a href="#">{{comment.user.uFirstName}} {{comment.user.uLastName}}</a> {{comment.aDate}}
+                          </div>
+
+                          <div class="p-2 no-top-padding no-bottom-padding" v-if="user.uId == comment.user.uId">
+
+                            <div class="d-flex">
+                              <div class="p-2">
+                                <div class="form-edit" v-on:click="showUpdateAnswer(comment.aId)"></div>
+                              </div>
+                              <div class="p-2">
+                                <div class="form-delete" data-toggle="modal" data-target="#removeModalComment"
+                                  v-on:click="selectAnswer(comment.aId)"></div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div class="no-padding">
+
+
+                        <div class="no-padding comment-text" v-bind:id="'comment-text'+comment.aId">
                           {{comment.aText}}
+                        </div>
+                        <div id="no-padding" class="comment-update-area" v-bind:id="'comment-update-area'+comment.aId">
+                          <div class="d-flex no-padding">
+                            <div class="p-2 comment-area-parent no-bottom-padding no-top-padding">
+                              <textarea class="commment-area" v-bind:id="'comment-update-textarea'+comment.aId"
+                                oninput="auto_grow(this)" v-bind:value="comment.aText"></textarea>
+                            </div>
+                            <div class="p-2 no-bottom-padding no-top-padding">
+                              <button type="submit" class="btn btn-primary mb-2"
+                                v-on:click="updateAnswer(comment.aId)">Update</button>
+                              <div>
+                                <button type="submit" class="btn btn-primary mb-2"
+                                  v-on:click="hideUpdateAnswer(comment.aId)">Close</button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -224,7 +288,8 @@
       </div>
 
 
-      <div class="modal fade" id="removeModal" tabindex="-1" role="dialog" aria-labelledby="buymodal1" aria-hidden="true">
+      <div class="modal fade" id="removeModal" tabindex="-1" role="dialog" aria-labelledby="buymodal1"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content" v-if="selectedQuestion">
             <div class="modal-header">
@@ -239,9 +304,28 @@
                 <button type="button" class="btn btn-danger" data-dismiss="modal"
                   v-on:click="removeQuestion(selectedQuestion.qsId)">Ta bort</button>
               </p>
-  
             </div>
-  
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="removeModalComment" tabindex="-1" role="dialog" aria-labelledby="buymodal1"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content" v-if="selectedAnswer">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Ta bort!</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <h5 class="card-title">Vill du verkligen ta bort {{selectedAnswer.aId}}?</h5>
+              <p class="card-text">
+                <button type="button" class="btn btn-danger" data-dismiss="modal"
+                  v-on:click="removeAnswer(selectedAnswer.aId)">Ta bort</button>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -274,7 +358,8 @@
         }],
         user: {},
         questions: [],
-        selectedQuestion : []
+        selectedQuestion: [],
+        selectedAnswer: []
 
       },
       methods: {
@@ -289,10 +374,18 @@
               this.categories = data
 
               this.categories.unshift({
+                "cId": -2,
+                "cTitle": "My questions",
+                "cDescription": "My questions"
+              })
+
+              this.categories.unshift({
                 "cId": -1,
                 "cTitle": "All",
                 "cDescription": "All categories"
               })
+
+              
             }
           });
 
@@ -307,6 +400,13 @@
 
               if (this.category_id == -1) {
                 this.questions = data
+              } else if (this.category_id == -2) {
+                this.questions = []
+                for (const id in data) {
+                  let question = data[id]
+                  if (question.uId === this.user.uId)
+                    this.questions.push(question)
+                }
               } else {
                 //Filter out by category
                 this.questions = []
@@ -486,20 +586,116 @@
           });
         },
 
+        removeAnswer: function (aId) {
+          let dat = { "aId": aId }
+          $.ajax({
+            url: '/answer',
+            data: dat,
+            type: 'DELETE',
+            success: function (data) {
+              vm.loadQuestions(false)
+            },
+            error: function (data) {
+              console.log("Error", data)
+            }
+          });
+        },
+
         updateCategory: function (id) {
           this.category_id = id
           this.loadQuestions()
         },
+
         showAnswers: function (id) {
           $(id).fadeToggle();
         },
 
-        selectQuestion(qsId) {
+        showUpdateQuestion: function (id) {
+          $("#update-question-form" + id).toggle();
+          $("#main-question" + id).toggle();
+        },
+        hideUpdateQuestion: function (id) {
+          $("#update-question-form" + id).hide();
+          $("#main-question" + id).show();
+        },
+        showUpdateAnswer: function (id) {
+          $("#comment-update-area" + id).toggle();
+          $("#comment-text" + id).toggle();
+        },
+        hideUpdateAnswer: function (id) {
+          $("#comment-update-area" + id).hide();
+          $("#comment-text" + id).show();
+        },
+
+
+        updateQuestion: function (qsId, cId) {
+
+          let qsTitle = $("#question-title" + qsId).val()
+          let qsText = $("#question-textarea" + qsId).val()
+          let quest = {
+            "qsId": qsId,
+            "cId": cId,
+            "qsTitle": qsTitle,
+            "qsText": qsText
+          }
+          this.hideUpdateQuestion(qsId)
+
+          $.ajax({
+            url: '/question',
+            type: 'PUT',
+            data: quest,
+
+            success: (up) => {
+              console.log(up)
+              this.loadQuestions()
+            },
+
+          });
+
+
+
+        },
+        updateAnswer: function (aId) {
+
+          let aText = $("#comment-update-textarea" + aId).val()
+          let answer = {
+            "aId": aId,
+            "aText": aText
+          }
+          this.hideUpdateAnswer(aId)
+
+          $.ajax({
+            url: '/answer',
+            type: 'PUT',
+            data: answer,
+
+            success: (up) => {
+              console.log(up)
+              this.loadQuestions(false)
+            },
+
+          });
+
+
+
+        },
+
+        selectQuestion: function (qsId) {
           $.ajax({
             url: "/question/" + qsId,
             type: 'GET',
             success: (data) => {
               this.selectedQuestion = data
+            }
+          });
+        },
+
+        selectAnswer: function (aId) {
+          $.ajax({
+            url: "/answers/" + aId,
+            type: 'GET',
+            success: (data) => {
+              this.selectedAnswer = data[0]
             }
           });
         },
@@ -515,7 +711,6 @@
               url: '/search/' + q,
               type: 'GET',
               success: (data) => {
-                console.log("error", data)
 
                 this.questions = data
 
@@ -553,11 +748,14 @@
       $("#ask-textarea").show()
     }
 
+
+
     function resetQuestion() {
 
       $("#ask-title").val("")
       $("#ask-textarea").val("")
       $("#ask-textarea").hide()
+      $(".update-question").hide();
     }
 
     function resetAnswer(qsId) {
@@ -603,6 +801,9 @@
 
     function hideAll() {
       $(".comment-section-main").hide()
+      $(".update-question").hide();
+      $(".comment-update-area").hide();
+
     }
 
 
@@ -614,8 +815,8 @@
       $(".comment-section-main").hide()
 
       $(".commment-area").height(5)
-
-
+      $(".update-question").hide();
+      $(".comment-update-area").hide();
 
 
     });
