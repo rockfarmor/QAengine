@@ -60,9 +60,10 @@
                         <div class="admincategory" v-for="category in categories">
                             {{category.cTitle}}
 
-                            <button type="button" class="btn btn-primary updateCategory" data-toggle="modal"
-                                data-target="#UpdateCategory"
-                                v-on:click=showCategoryInUpdateForm(category.cId)>Update</button>
+                            
+                                
+                                    <div class="form-edit" v-on:click=showCategoryInUpdateForm(category.cId)></div>
+                                 
                         </div>
 
                         <div>
@@ -107,6 +108,7 @@
                                     <div class="form-group">
                                         <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
                                         <input type="submit" class="btn btn-primary float-right" value="Update Category" v-on:click="updateCat()">
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -246,7 +248,7 @@
                                                 id="addDescription">
                                         </div>
 
-
+                                    
 
                                         <div class="form-group">
                                             <button type="button" class="btn btn-danger"
@@ -254,6 +256,7 @@
                                             <input type="submit" class="btn btn-primary float-right"
                                                 value="Add Category" v-on:click=addCategory()>
                                         </div>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -324,7 +327,7 @@
             </div>
 
 
-
+            
 
         </main>
 

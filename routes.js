@@ -172,9 +172,11 @@ routes.post('/user/login', async (req, res) => {
                             if (err) {
                                 return console.log(err);
                             }
-                            res.redirect('/');
+                            //res.redirect('/');
+                           
                         });
                         valid = false;
+                        
                     }
 
                     res.json(valid);
