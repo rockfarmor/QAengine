@@ -53,16 +53,20 @@
         <main role="main" class="container">
 
             <div class="d-flex">
-                <div class="p-2 main-flex-side">
+                <div class="p-2 main-flex-side2">
 
                     <div class="categories">
 
                         <div class="admincategory" v-for="category in categories">
-                            {{category.cTitle}}
-
-                            
-                                
+                            <div class="d-flex">
+                                <div class="p-2 mr-auto">
+                                    {{category.cTitle}}
+                                </div>
+                                <div class="p-2">
                                     <div class="form-edit" v-on:click=showCategoryInUpdateForm(category.cId)></div>
+                                </div>
+                            </div>
+                            
                                  
                         </div>
 
@@ -611,11 +615,11 @@
                             console.log(data)
 
 
-                            if (data["loggedIn"]) {
+                            if (data["loggedIn"] && data.user.uRank == 2) {
                                 this.user = data["user"]
                             } else {
                                 console.log("You shall not pass")
-                                window.location.href = "/";
+                                window.location.href = "/landing.html";
                             }
 
 

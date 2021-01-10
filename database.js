@@ -52,7 +52,13 @@ const getUserByEmail = async (data) => {
 const addUser = async (data, hashpass) => {
     try {
         const dbcon = await dbPromise;
-        await dbcon.run("INSERT INTO user (uEmail,uPassword,uFirstName,uLastName,uRank,url) VALUES(?,?,?,?,?,?)", [data.uEmail, hashpass, data.uFirstName, data.uLastName, data.uRank,data.url]);
+
+        if(data.url){
+            await dbcon.run("INSERT INTO user (uEmail,uPassword,uFirstName,uLastName,uRank,url) VALUES(?,?,?,?,?,?)", [data.uEmail, hashpass, data.uFirstName, data.uLastName, data.uRank,data.url]);
+        } else {
+            await dbcon.run("INSERT INTO user (uEmail,uPassword,uFirstName,uLastName,uRank) VALUES(?,?,?,?,?)", [data.uEmail, hashpass, data.uFirstName, data.uLastName, data.uRank]);
+        }
+
         return { status: "ok" };
     } catch (error) {
         throw new Error("Gick ej att lägga till en user");
@@ -95,7 +101,7 @@ const logIn = async (data) => {
 const getQuestions = async () => {
     try {
         const dbcon = await dbPromise;
-        const prod = await dbcon.all('Select qsId,qsTitle,qsText,uId,cId,qsDate,qUpVotes,qDownVotes from questions order by qsId Desc')
+        const prod = await dbcon.all('Select qsId,qsTitle,qsText,uId,cId,qsDate,qUpVotes,qDownVotes,isDuplicate from questions order by qsId Desc')
 
         return prod;
     } catch (error) {
@@ -304,8 +310,24 @@ const voteDown = async (aId) => {
 }
 
 //LABEL AS DUPLICATE
-const labelDuplicate = async () => {
-
+const labelDuplicate = async (data) => {
+    try {
+        const dbcon = await dbPromise;
+        await dbcon.run("UPDATE questions SET isDuplicate = 1 WHERE qsId = ?", [data]);
+        return { status: "Frågan blev uppdaterad" };
+    } catch (error) {
+        throw new Error("Gick inte att uppdatera frågan")
+    }
+}
+//LABEL AS DUPLICATE
+const labelNotDuplicate = async (data) => {
+    try {
+        const dbcon = await dbPromise;
+        await dbcon.run("UPDATE questions SET isDuplicate = 0 WHERE qsId = ?", [data]);
+        return { status: "Frågan blev uppdaterad" };
+    } catch (error) {
+        throw new Error("Gick inte att uppdatera frågan")
+    }
 }
 //BLOCK A USER
 const blockUser = async (uId) => {
@@ -419,6 +441,7 @@ module.exports = {
     updateCategory : updateCategory, //KLAR
     deleteCategory : deleteCategory, //KLAR
     getCategorys : getCategorys,
-    getCategoryById : getCategoryById
+    getCategoryById : getCategoryById,
+    labelNotDuplicate : labelNotDuplicate
 
 };

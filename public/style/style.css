@@ -30,6 +30,21 @@ body {
     cursor: pointer;
     
 }
+.form-duplicate{
+    background-color: black;
+
+    -webkit-mask-image: url(../images/icons/view-stacked.svg);
+    -webkit-mask-size: cover;
+    -webkit-mask-size: contain;
+
+    mask-image: url(../images/icons/view-stacked.svg);
+    mask-size: cover;
+    mask-size: contain;
+
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+}
 
 .form-delete {
     
@@ -49,6 +64,10 @@ body {
     
 }
 
+.redbackground {
+    background-color: rgb(255, 227, 227)!important;
+}
+
 
 .logged-in {
     font-size: 11px;
@@ -58,9 +77,16 @@ body {
 }
 
 .main-flex-side {
-    width: 20%;
+    width: 20%!important;
+    min-width: 250px;
 
 }
+
+.main-flex-side2 {
+    width: 20%!important;
+    min-width: 250px;
+}
+
 
 .main-flex {
     width: 100%;

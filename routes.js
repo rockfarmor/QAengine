@@ -93,31 +93,59 @@ routes.post('/user', async (req, res) => {
     const data = req.body;
     try {
         const check = req.body;
-        if (check.uEmail.length <= 100 && check.uPassword.length <= 100 && check.uFirstName.length <= 30 && check.uLastName.length <= 30 && check.uRank) {
-            const hashpass = await genPass(req.body.uPassword);
-            const res = await dbService.addUser(req.body, hashpass);
+        
+        sess = req.session;
+        if (sess.user) {
+            //Only logged in admins can unblock a user
+            if (sess.user[0].uRank == 2) {
+                //Logged in as super admin
+                if (check.uEmail.length <= 100 && check.uPassword.length <= 100 && check.uFirstName.length <= 30 && check.uLastName.length <= 30 && check.uRank) {
+                    const hashpass = await genPass(req.body.uPassword);
+                    const result = await dbService.addUser(req.body, hashpass);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste  vara superadmin")
+            }
+
         } else {
-            console.log("Fel input");
+            throw new Error("Du måste vara inloggad")
         }
+
+        res.json({ status: "ok" });
     }
     catch (error) {
         console.log(error);
         res.json("Gick ej att lägga till användare")
     }
-    res.json({ status: "ok" });
+
 });
 //DELETE A USER
 routes.delete('/user', async (req, res) => {
 
     try {
         const check = req.body;
-        
-        if (!isNaN(check.uId)) {
-            const resa = await dbService.deleteUser(check.uId);
 
-            res.json(resa);
+        sess = req.session;
+        if (sess.user) {
+            //Only logged in admins can unblock a user
+            if (sess.user[0].uRank == 2) {
+                //Logged in as super admin
+                if (!isNaN(check.uId)) {
+                    const resa = await dbService.deleteUser(check.uId);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste  vara superadmin")
+            }
+
         } else {
-            throw new Error("Fel Validering");
+            throw new Error("Du måste vara inloggad")
         }
     } catch (error) {
         console.log(error);
@@ -128,14 +156,29 @@ routes.delete('/user', async (req, res) => {
 //UPDATE A USER
 routes.put('/user', async (req, res) => {
     const check = req.body;
-    console.log(check)
     try {
-        if (check.uEmail.length <= 100 && check.uFirstName.length <= 30 && check.uLastName.length <= 30 && check.uRank && check.url.length > 0) {
-            const resa = await dbService.updateUser(check);
-            res.json(resa);
+
+        
+        sess = req.session;
+        if (sess.user) {
+            //Only logged in admins can unblock a user
+            if (sess.user[0].uRank == 2) {
+                //Logged in as super admin
+                if (check.uEmail.length <= 100 && check.uFirstName.length <= 30 && check.uLastName.length <= 30 && check.uRank && check.url.length > 0) {
+                    const resa = await dbService.updateUser(check);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste  vara superadmin")
+            }
+
         } else {
-            throw new error("Fel Validering");
+            throw new Error("Du måste vara inloggad")
         }
+
     } catch (error) {
         console.log(error)
         res.json("Gick ej att uppdatera användaren");
@@ -159,24 +202,24 @@ routes.post('/user/login', async (req, res) => {
                 if (valid) {
 
                     //Set session variables
-                    
+
                     sess = req.session;
 
                     let userr = await dbService.getUserByEmail(data.uEmail);
                     sess.user = userr;
-                    
-                    
+
+
                     //Blocked
-                    if(userr[0].uBlocked == 1){
+                    if (userr[0].uBlocked == 1) {
                         req.session.destroy((err) => {
                             if (err) {
                                 return console.log(err);
                             }
                             //res.redirect('/');
-                           
+
                         });
                         valid = false;
-                        
+
                     }
 
                     res.json(valid);
@@ -230,14 +273,23 @@ routes.post('/question', async (req, res) => {
     const check = req.body;
 
     try {
+        //All can add question?
 
+        sess = req.session;
+        if (sess.user) {
+            //Only logged in users can post
 
-        if (check.qsTitle.length <= 100 && !isNaN(check.uId) && !isNaN(check.cId)) {
-            const resa = await dbService.addQuestion(req.body);
-            res.json(resa);
+            if (check.qsTitle.length <= 100 && !isNaN(check.uId) && !isNaN(check.cId)) {
+                const resa = await dbService.addQuestion(req.body);
+                res.json(resa);
+            } else {
+                throw new Error("Fel validering")
+            }
+
         } else {
-            console.log("Wrong input");
+            throw new Error("Du måste vara inloggad")
         }
+
     }
     catch (error) {
         console.log(error);
@@ -287,13 +339,31 @@ routes.delete('/question', async (req, res) => {
     try {
         const check = req.body;
 
-        if (!isNaN(check.qsId)) {
-            const resa = await dbService.deleteQuestion(check.qsId);
+        //Superadmins and the user who posted can delete question.
 
-            res.json(resa);
+        sess = req.session;
+        if (sess.user) {
+            
+            const question = await dbService.getQuestById(check.qsId);
+
+            if (sess.user[0].uRank == 2 || question[0].uId == sess.user[0].uId) {
+                //Logged in as super admin
+                if (!isNaN(check.qsId)) {
+                    const resa = await dbService.deleteQuestion(check.qsId);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste vara superadmin eller äga posten för att ta bort")
+            }
+
         } else {
-            throw new error("Fel Validering");
+            throw new Error("Du måste vara inloggad för att unblockera users")
         }
+
+
     } catch (error) {
         console.log(error);
         res.json("Gick ej att ta bort frågan");
@@ -357,14 +427,31 @@ routes.get('/search/:name', async (req, res) => {
 //UPDATE A QUESTION
 routes.put('/question', async (req, res) => {
     const check = req.body;
-    console.log(check)
+
+    //Super admins and owner user can edit post
     try {
-        if (check.qsTitle.length <= 100 && !isNaN(check.qsId) && !isNaN(check.cId)) {
-            const resa = await dbService.updateQuestion(check);
-            res.json(resa);
+
+        sess = req.session;
+        if (sess.user) {
+            
+            const question = await dbService.getQuestById(check.qsId);
+
+            if (sess.user[0].uRank == 2 || question[0].uId == sess.user[0].uId) {
+                if (check.qsTitle.length <= 100 && !isNaN(check.qsId) && !isNaN(check.cId)) {
+                    const resa = await dbService.updateQuestion(check);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste vara superadmin eller äga posten för att ta bort")
+            }
+
         } else {
-            throw new error("Fel Validering");
+            throw new Error("Du måste vara inloggad för att unblockera users")
         }
+
     } catch (error) {
         console.log(error)
         res.json("Gick ej att uppdatera frågan");
@@ -440,12 +527,25 @@ routes.post('/answer', async (req, res) => {
     const data = req.body;
     const check = req.body;
 
+    //You have to be logged in to post answer
+
+
     try {
-        if (check.aText.length > 0 && !isNaN(check.qsId) && !isNaN(check.uId)) {
-            const resa = await dbService.addAnswer(req.body);
-            res.json(resa);
+
+
+
+        sess = req.session;
+        if (sess.user) {
+            //Only logged in admins can block a user
+            if (check.aText.length > 0 && !isNaN(check.qsId) && !isNaN(check.uId)) {
+                const resa = await dbService.addAnswer(req.body);
+                res.json(resa);
+            } else {
+                throw new Error("Fel validering")
+            }
+
         } else {
-            console.log("Wrong input");
+            throw new Error("Du måste vara inloggad för att lägga till users")
         }
     }
     catch (error) {
@@ -458,11 +558,29 @@ routes.post('/answer', async (req, res) => {
 routes.put('/answer', async (req, res) => {
     const check = req.body;
     try {
-        if (check.aText.length > 0 && !isNaN(check.aId)) {
-            const resa = await dbService.updateAnswer(check);
-            res.json(resa);
+
+
+        //only super admins or owner of post can edit answer
+
+        sess = req.session;
+        if (sess.user) {
+            
+            const answer = await dbService.getAnswerById(check.aId);
+
+            if (sess.user[0].uRank == 2 || answer[0].uId == sess.user[0].uId) {
+                if (check.aText.length > 0 && !isNaN(check.aId)) {
+                    const resa = await dbService.updateAnswer(check);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste vara superadmin eller äga posten för att ta bort")
+            }
+
         } else {
-            throw new error("Fel Validering");
+            throw new Error("Du måste vara inloggad för att unblockera users")
         }
     } catch (error) {
         console.log(error)
@@ -476,13 +594,30 @@ routes.delete('/answer', async (req, res) => {
     try {
         const check = req.body;
 
-        if (!isNaN(check.aId)) {
-            const resa = await dbService.deleteAnswer(check.aId);
+        //only super admins or owner of post can delete answer
 
-            res.json(resa);
+        sess = req.session;
+        if (sess.user) {
+            
+            const answer = await dbService.getAnswerById(check.aId);
+
+            if (sess.user[0].uRank == 2 || answer[0].uId == sess.user[0].uId) {
+                if (!isNaN(check.aId)) {
+                    const resa = await dbService.deleteAnswer(check.aId);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste vara superadmin eller äga posten för att ta bort")
+            }
+
         } else {
-            throw new error("Fel Validering");
+            throw new Error("Du måste vara inloggad för att unblockera users")
         }
+
+
     } catch (error) {
         console.log(error);
         res.json("Gick ej att ta bort svaret");
@@ -599,22 +734,79 @@ routes.put('/updateurl', async (req, res) => {
 });
 
 //LABEL AS DUPLICATE
-routes.put('/home/blablal', async (req, res) => {
+routes.put('/duplicate', async (req, res) => {
+    const data = req.body
+    try {
+        if(sess.user){
+            if (sess.user[0].uRank >= 1 && !isNaN(data.qsId)) {
+                const resa = await dbService.labelDuplicate(data.qsId);
+                res.json(resa);
+            } else {
+                throw new Error("Fel validering")
+            }
+        } else {
+            throw new Error("Ej inloggad")
+        }
+
+    } catch (error) {
+        console.log(error)
+        res.json("Gick ej att uppdatera");
+    }
+
+
+});
+//LABEL AS  NOT DUPLICATE
+routes.put('/duplicate/not', async (req, res) => {
+    const data = req.body
+    try {
+        if(sess.user){
+            if (sess.user[0].uRank >= 1 && !isNaN(data.qsId)) {
+                const resa = await dbService.labelNotDuplicate(data.qsId);
+                res.json(resa);
+            } else {
+                throw new Error("Fel validering")
+            }
+        } else {
+            throw new Error("Ej inloggad")
+        }
+
+    } catch (error) {
+        console.log(error)
+        res.json("Gick ej att uppdatera");
+    }
+
 
 });
 //BLOCK A USER
 routes.put('/user/block/:id', async (req, res) => {
     const data = req.params.id;
-    console.log(data);
-    console.log("TJaa")
-    try {
-        if (!isNaN(data)) {
 
-            const resa = await dbService.blockUser(data);
-            res.json(resa);
+
+
+    try {
+
+        //Make sure Session user is super admin
+        sess = req.session;
+        if (sess.user) {
+            //Only logged in admins can block a user
+            if (sess.user[0].uRank == 2) {
+                //Logged in as super admin
+                if (!isNaN(data)) {
+
+                    const resa = await dbService.blockUser(data);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste  vara superadmin för att blockera users")
+            }
+
         } else {
-            throw new Error("Fel validering")
+            throw new Error("Du måste vara inloggad för att lägga till users")
         }
+
 
     } catch (error) {
         console.log(error)
@@ -625,11 +817,25 @@ routes.put('/user/block/:id', async (req, res) => {
 routes.put('/user/unblock/:id', async (req, res) => {
     const data = req.params.id;
     try {
-        if (!isNaN(data)) {
-            const resa = await dbService.unBlockUser(data);
-            res.json(resa);
+
+        sess = req.session;
+        if (sess.user) {
+            //Only logged in admins can unblock a user
+            if (sess.user[0].uRank == 2) {
+                //Logged in as super admin
+                if (!isNaN(data)) {
+                    const resa = await dbService.unBlockUser(data);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste  vara superadmin för att unblockera users")
+            }
+
         } else {
-            throw new Error("Fel validering")
+            throw new Error("Du måste vara inloggad för att unblockera users")
         }
 
     } catch (error) {
@@ -641,14 +847,27 @@ routes.put('/user/unblock/:id', async (req, res) => {
 routes.post('/category', async (req, res) => {
     const data = req.body;
     const check = req.body;
-    console.log(check)
     try {
-        if (check.cTitle.length > 0 && check.cDescription.length > 0) {
-            const resa = await dbService.addCategory(req.body);
-            res.json(resa);
+        sess = req.session;
+        if (sess.user) {
+            //Only logged in admins can unblock a user
+            if (sess.user[0].uRank == 2) {
+                //Logged in as super admin
+                if (check.cTitle.length > 0 && check.cDescription.length > 0) {
+                    const resa = await dbService.addCategory(req.body);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste  vara superadmin")
+            }
+
         } else {
-            console.log("Wrong input");
+            throw new Error("Du måste vara inloggad")
         }
+
     }
     catch (error) {
         console.log(error);
@@ -659,13 +878,28 @@ routes.post('/category', async (req, res) => {
 //UPDATE CATEGORY
 routes.put('/category', async (req, res) => {
     const check = req.body;
-    console.log(check)
+
     try {
-        if (check.cTitle.length > 0 && check.cDescription.length > 0 && !isNaN(check.cId)) {
-            const resa = await dbService.updateCategory(check);
-            res.json(resa);
+
+
+        sess = req.session;
+        if (sess.user) {
+            //Only logged in admins can unblock a user
+            if (sess.user[0].uRank == 2) {
+                //Logged in as super admin
+                if (check.cTitle.length > 0 && check.cDescription.length > 0 && !isNaN(check.cId)) {
+                    const resa = await dbService.updateCategory(check);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+
+            } else {
+                throw new Error("Du måste  vara superadmin")
+            }
+
         } else {
-            throw new Error("Fel Validering");
+            throw new Error("Du måste vara inloggad")
         }
     } catch (error) {
         console.log(error)
@@ -675,7 +909,7 @@ routes.put('/category', async (req, res) => {
 });
 //DELETE CATEGORY
 routes.delete('/category', async (req, res) => {
-
+    //Unused
     try {
         const check = req.body;
 

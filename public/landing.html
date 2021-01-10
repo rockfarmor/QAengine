@@ -25,7 +25,7 @@
           <li class="nav-item active">
             <a class="nav-link" href="landing.html">Home <span class="sr-only">(current)</span></a>
           </li>
-          <li class="nav-item"v-if="user.uRank == 2">
+          <li class="nav-item" v-if="user.uRank == 2">
             <a class="nav-link" href="admin.html">Admin</a>
           </li>
           <li class="nav-item">
@@ -106,7 +106,8 @@
           </div>
 
 
-          <div class="question" v-for="question in questions" v-if="questions">
+          <div class="question" v-for="question in questions" v-if="questions"
+            v-bind:class="{ redbackground: question.isDuplicate == 1 }">
             <div class="profile" v-if="question.user">
 
               <div class="profile d-flex flex-row no-padding">
@@ -114,19 +115,25 @@
                 <div class="p-2 mr-auto  name no-top-padding no-bottom-padding">
 
                   <div class="no-padding">
-                    <a href="#">{{question.user.uFirstName}} {{question.user.uLastName}}</a> {{question.qsDate}}
+                    <a href="#">{{question.user.uFirstName}} {{question.user.uLastName}}</a>
+                    {{getrank(question.user.uRank)}}
+                    <em v-if="question.isDuplicate == 1"> <b>Question Duplicated</b></em>
                   </div>
                   <div class="no-padding">
-                    <em>Föredetta statsminister, numera konung</em>
+                    <em>{{question.qsDate}}</em>
+
                   </div>
                 </div>
-                <div class="p-2 no-top-padding no-bottom-padding" v-if="user.uId == question.user.uId">
+                <div class="p-2 no-top-padding no-bottom-padding">
 
                   <div class="d-flex">
-                    <div class="p-2">
+                    <div class="p-2" v-if="user.uRank > 0">
+                      <div class="form-duplicate" v-on:click=isDuplicate(question.qsId,question.isDuplicate)></div>
+                    </div>
+                    <div class="p-2" v-if="user.uId == question.user.uId || user.uRank == 2">
                       <div class="form-edit" v-on:click="showUpdateQuestion(question.qsId)"></div>
                     </div>
-                    <div class="p-2">
+                    <div class="p-2" v-if="user.uId == question.user.uId || user.uRank == 2">
                       <div class="form-delete" data-toggle="modal" data-target="#removeModal"
                         v-on:click="selectQuestion(question.qsId)"></div>
                     </div>
@@ -213,10 +220,17 @@
 
 
                           <div class="p-2 mr-auto no-padding" style="width: 100%">
-                            <a href="#">{{comment.user.uFirstName}} {{comment.user.uLastName}}</a> {{comment.aDate}}
+                            <div class="no-padding">
+                              <a href="#">{{comment.user.uFirstName}} {{comment.user.uLastName}}</a>
+                              {{getrank(comment.user.uRank)}}
+                            </div>
+                            <div class="no-padding">
+                              <em>{{comment.aDate}}</em>
+                            </div>
                           </div>
 
-                          <div class="p-2 no-top-padding no-bottom-padding" v-if="user.uId == comment.user.uId">
+                          <div class="p-2 no-top-padding no-bottom-padding"
+                            v-if="user.uId == comment.user.uId || user.uRank == 2">
 
                             <div class="d-flex">
                               <div class="p-2">
@@ -385,7 +399,7 @@
                 "cDescription": "All categories"
               })
 
-              
+
             }
           });
 
@@ -679,6 +693,38 @@
 
 
         },
+        isDuplicate: function (id, duplicate) {
+          let dat = { qsId: id }
+
+          ///question/upvote
+          if (duplicate == 1) {
+            $.ajax({
+              url: '/duplicate/not',
+              data: dat,
+              type: 'PUT',
+              success: function (data) {
+                vm.loadQuestions(false)
+
+              },
+              error: function (data) {
+                console.log("Error", data)
+              }
+            });
+          } else {
+            $.ajax({
+              url: '/duplicate',
+              data: dat,
+              type: 'PUT',
+              success: function (data) {
+                vm.loadQuestions(false)
+
+              },
+              error: function (data) {
+                console.log("Error", data)
+              }
+            });
+          }
+        },
 
         selectQuestion: function (qsId) {
           $.ajax({
@@ -688,6 +734,17 @@
               this.selectedQuestion = data
             }
           });
+        },
+        getrank: function (rank) {
+          if (rank == 0) {
+            return "Consumer"
+          } else if (rank == 1) {
+            return "Contributor"
+          } else if (rank == 2) {
+            return "Super admin"
+          } else {
+            return "undefined"
+          }
         },
 
         selectAnswer: function (aId) {
