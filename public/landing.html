@@ -28,7 +28,7 @@
           <li class="nav-item" v-if="user.uRank == 2">
             <a class="nav-link" href="admin.html">Admin</a>
           </li>
-         
+
         </ul>
         <div class="picture no-bottom-padding no-top-padding d-flex" v-if="user">
           <div class="p2">
@@ -117,10 +117,21 @@
                     {{getrank(question.user.uRank)}}
                     <em v-if="question.isDuplicate == 1"> <b>Question Duplicated</b></em>
                   </div>
+
                   <div class="no-padding">
-                    <em>{{question.qsDate}}</em>
+                    <div class="d-flex">
+                      <div class="p-2 no-padding"> <em>{{question.qsDate}}</em> </div>
+                      <div class="p-2 no-padding" v-for="cat in categories" v-if="cat.cId == question.cId"><em
+                          class="padd-left" v-if="cat.cId == question.cId"> Category: {{cat.cTitle}}</em></div>
+
+
+
+
+
+                    </div>
 
                   </div>
+
                 </div>
                 <div class="p-2 no-top-padding no-bottom-padding">
 
@@ -192,7 +203,7 @@
 
               <div class="comment-section-main" v-bind:id="'comments-section-'+question.qsId">
                 <hr />
-                <div class="comment-add" v-if="user">
+                <div class="comment-add" v-if="user.uRank > 0 || user.uId == question.user.uId">
                   <div class="d-flex">
                     <div class="p-2 picture no-bottom-padding no-top-padding">
                       <img v-bind:src="user.url">
@@ -430,8 +441,9 @@
 
               }
 
-
-
+              this.$nextTick(() => {
+                hideAllAnswerUpdate()
+              });
               if (hide) {
                 this.$nextTick(() => {
                   hideAll()
@@ -489,10 +501,10 @@
           $.ajax({
             url: '/logout',
             type: 'GET',
-            data: this.user,
+
             success: () => {
               this.user = {}
-              window.location.href = "/";
+              window.location.href = "/index.html";
             }
           });
         },
@@ -575,6 +587,8 @@
             success: function (data) {
               vm.loadQuestions(false)
               resetAnswer(qsId)
+              console.log("Are we really here")
+
             },
             error: function (data) {
               console.log("Error", data)
@@ -813,8 +827,17 @@
       $(".update-question").hide();
     }
 
+    function hideAllAnswerUpdate() {
+
+      $(".comment-text").show()
+      $(".comment-update-area").hide()
+
+
+    }
+
     function resetAnswer(qsId) {
       $("#comment-textarea" + qsId).val("")
+
     }
 
     function sendQuestion() {

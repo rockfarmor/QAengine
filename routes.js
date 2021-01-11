@@ -93,7 +93,7 @@ routes.post('/user', async (req, res) => {
     const data = req.body;
     try {
         const check = req.body;
-        
+
         sess = req.session;
         if (sess.user) {
             //Only logged in admins can unblock a user
@@ -158,7 +158,7 @@ routes.put('/user', async (req, res) => {
     const check = req.body;
     try {
 
-        
+
         sess = req.session;
         if (sess.user) {
             //Only logged in admins can unblock a user
@@ -192,17 +192,16 @@ routes.post('/user/login', async (req, res) => {
     const data = req.body;
 
     try {
-        if (data.uEmail.length > 4 && data.uPassword.length > 0) {
+        if (data.uEmail.length >= 4 && data.uPassword.length > 0) {
             const data = req.body;
             const user = await dbService.logIn(data);
-
             if (user) {
 
                 let valid = await comparePass(data.uPassword, user["uPassword"]);
                 if (valid) {
 
                     //Set session variables
-
+                    //Sessions source code came from this https://codeforgeek.com/manage-session-using-node-js-express-4/
                     sess = req.session;
 
                     let userr = await dbService.getUserByEmail(data.uEmail);
@@ -343,7 +342,7 @@ routes.delete('/question', async (req, res) => {
 
         sess = req.session;
         if (sess.user) {
-            
+
             const question = await dbService.getQuestById(check.qsId);
 
             if (sess.user[0].uRank == 2 || question[0].uId == sess.user[0].uId) {
@@ -433,7 +432,7 @@ routes.put('/question', async (req, res) => {
 
         sess = req.session;
         if (sess.user) {
-            
+
             const question = await dbService.getQuestById(check.qsId);
 
             if (sess.user[0].uRank == 2 || question[0].uId == sess.user[0].uId) {
@@ -492,35 +491,6 @@ routes.put('/question/downvote', async (req, res) => {
 });
 
 
-//ADD A FILE
-routes.post('/file', files.single('file'), async (req, res) => {
-    const newFile = req.file;
-    const Id = req.body;
-    const ext = req.file.originalname.split('.');
-    const fileEnd = ext[ext.length - 1];
-    const fileName = './files/' + Date.now() + '.' + fileEnd;
-    try {
-        const filewrite = await fs.rename(newFile.path, fileName);
-        if (!filewrite) {
-            let prod = await dbService.getProdById(Id.Id);
-            if (prod.length > 0) {
-                prod[0].picture = fileName;
-                let prod2 = await dbService.updateProd(prod[0]);
-                res.json(prod2);
-            } else {
-                throw new error("Kunde inte hitta en produkt");
-            }
-        }
-        else {
-            await fs.unlink(newFile.path);
-            throw new error("Gick inte att skriva över filen");
-        }
-    } catch (error) {
-        console.log(error);
-        res.status(400).json(error);
-    }
-
-});
 
 //ADD ANSWER
 routes.post('/answer', async (req, res) => {
@@ -528,6 +498,7 @@ routes.post('/answer', async (req, res) => {
     const check = req.body;
 
     //You have to be logged in to post answer
+    //And either own post or be contributer or ssupermadmin
 
 
     try {
@@ -536,14 +507,19 @@ routes.post('/answer', async (req, res) => {
 
         sess = req.session;
         if (sess.user) {
-            //Only logged in admins can block a user
-            if (check.aText.length > 0 && !isNaN(check.qsId) && !isNaN(check.uId)) {
-                const resa = await dbService.addAnswer(req.body);
-                res.json(resa);
-            } else {
-                throw new Error("Fel validering")
-            }
+            //logged in user?
+            const quest = await dbService.getQuestById(check.qsId);
+            if (sess.user[0].uRank >= 1 || quest[0].uId == sess.user[0].uId) {
 
+                if (check.aText.length > 0 && !isNaN(check.qsId) && !isNaN(check.uId)) {
+                    const resa = await dbService.addAnswer(req.body);
+                    res.json(resa);
+                } else {
+                    throw new Error("Fel validering")
+                }
+            } else {
+                throw new Error("Du måste äga posten för att kommentera, eller vara contributer/superadmin")
+            }
         } else {
             throw new Error("Du måste vara inloggad för att lägga till users")
         }
@@ -564,7 +540,7 @@ routes.put('/answer', async (req, res) => {
 
         sess = req.session;
         if (sess.user) {
-            
+
             const answer = await dbService.getAnswerById(check.aId);
 
             if (sess.user[0].uRank == 2 || answer[0].uId == sess.user[0].uId) {
@@ -598,7 +574,7 @@ routes.delete('/answer', async (req, res) => {
 
         sess = req.session;
         if (sess.user) {
-            
+
             const answer = await dbService.getAnswerById(check.aId);
 
             if (sess.user[0].uRank == 2 || answer[0].uId == sess.user[0].uId) {
@@ -737,7 +713,7 @@ routes.put('/updateurl', async (req, res) => {
 routes.put('/duplicate', async (req, res) => {
     const data = req.body
     try {
-        if(sess.user){
+        if (sess.user) {
             if (sess.user[0].uRank >= 1 && !isNaN(data.qsId)) {
                 const resa = await dbService.labelDuplicate(data.qsId);
                 res.json(resa);
@@ -759,7 +735,7 @@ routes.put('/duplicate', async (req, res) => {
 routes.put('/duplicate/not', async (req, res) => {
     const data = req.body
     try {
-        if(sess.user){
+        if (sess.user) {
             if (sess.user[0].uRank >= 1 && !isNaN(data.qsId)) {
                 const resa = await dbService.labelNotDuplicate(data.qsId);
                 res.json(resa);

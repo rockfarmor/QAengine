@@ -13,6 +13,10 @@ body {
     padding: 10px;
 }
 
+.padd-left{
+    padding-left: 10px!important;
+}
+
 .form-edit {
     
     background-color: black;
