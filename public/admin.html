@@ -134,8 +134,12 @@
                                         <div>
 
                                             <p><b>Name: </b>{{user.uFirstName}} {{user.uLastName}}</p>
-                                            <p><b>Rank: </b>{{user.uRank}}</p>
-                                            <p><b>User Blocked: </b>{{user.uBlocked}}</p>
+                                            <p v-if="user.uRank == 0"><b>Rank: </b>Consumer</p>
+                                            <p v-if="user.uRank == 1"><b>Rank: </b>Contributor</p>
+                                            <p v-if="user.uRank == 2"><b>Rank: </b>Super Admin</p>
+                                            
+                                            <p v-if="user.uBlocked == 0"><b>User Blocked: </b>No</p>
+                                            <p v-if="user.uBlocked == 1" style="color: red;"><b>User Blocked: </b>Yes</p>
 
 
                                         </div>
