@@ -17,8 +17,13 @@ body {
     padding-left: 10px!important;
 }
 
+
+/*
+    These svg icons are in fact a mask, this is used so that the color of the icon easily can be changed.
+    https://stackoverflow.com/questions/13367868/modify-svg-fill-color-when-being-served-as-background-image
+*/
+
 .form-edit {
-    
     background-color: black;
 
     -webkit-mask-image: url(../images/icons/tools.svg);
