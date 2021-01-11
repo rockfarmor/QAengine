@@ -1,0 +1,62 @@
+Members of group:
+Sebastian Nilsson h19sebni
+Johan Nilsson	h19jnils
+
+
+Code is based on the labs from the course.
+The auto_grow function for adding comments is from https://stackoverflow.com/questions/17772260/textarea-auto-height
+
+Sessions code is based on this:
+https://codeforgeek.com/manage-session-using-node-js-express-4/
+
+Change svg icon color by using masks:
+https://stackoverflow.com/questions/13367868/modify-svg-fill-color-when-being-served-as-background-image
+
+Page layout is based on "Navbar static" example from bootstrap page
+https://getbootstrap.com/docs/4.0/examples/
+
+And design inspiration from qoura
+https://www.quora.com/
+
+___________________________________________________________________
+
+Some logins:
+
+Consumers:
+_
+login: goran@goran.com
+password: 123
+_
+login: jian
+password: 123
+_
+login: johan@johan.com
+password: johan
+_
+login: maudi@gov.se
+password: 123
+STATUS: BLOCKED
+_
+login: ronny
+password: 123
+_
+
+Contributors
+login: bosse
+password: 123
+_
+login: gilfoyle
+password: 123
+_
+login: freddan64@gov.se
+password: 123
+_
+
+Superadmins:
+login: seb@seb.com
+password: seb
+_
+
+
+
+
