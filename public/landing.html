@@ -28,9 +28,7 @@
           <li class="nav-item" v-if="user.uRank == 2">
             <a class="nav-link" href="admin.html">Admin</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link Disabled" href="#">Disabled</a>
-          </li>
+         
         </ul>
         <div class="picture no-bottom-padding no-top-padding d-flex" v-if="user">
           <div class="p2">
@@ -313,7 +311,7 @@
               </button>
             </div>
             <div class="modal-body">
-              <h5 class="card-title">Vill du verkligen ta bort {{selectedQuestion.qsId}}?</h5>
+              <h5 class="card-title">Vill du verkligen ta bort frågan?</h5>
               <p class="card-text">
                 <button type="button" class="btn btn-danger" data-dismiss="modal"
                   v-on:click="removeQuestion(selectedQuestion.qsId)">Ta bort</button>
@@ -334,7 +332,7 @@
               </button>
             </div>
             <div class="modal-body">
-              <h5 class="card-title">Vill du verkligen ta bort {{selectedAnswer.aId}}?</h5>
+              <h5 class="card-title">Vill du verkligen ta bort svaret?</h5>
               <p class="card-text">
                 <button type="button" class="btn btn-danger" data-dismiss="modal"
                   v-on:click="removeAnswer(selectedAnswer.aId)">Ta bort</button>
